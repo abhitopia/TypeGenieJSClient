@@ -1,0 +1,26 @@
+import FroalaEditor
+
+Version = FroalaEditor.__version__
+
+
+# Without Typegenie
+editor = FroalaEditor(*args, **kwargs)
+
+
+# With Typegenie (Abhi)
+editor = FroalaEditorWithTypeGenie(*args, **kwargs, api_client, events_callback)
+
+
+# With Typegenie (Omkar) => Spell Checker
+editor = FroalaEditor(*args, **kwargs)
+editor = FroalaContextManager(editor, api_client, events_callback)
+
+
+# With Typegenie (Monkey Patching)  #  We chose to do this in the end
+editor = FroalaEditor(*args, **kwargs)
+editor.bind_typegenie(api_client, events_callback)
+
+
+
+1. # Extensible  (library design)
+2. # User friendly
