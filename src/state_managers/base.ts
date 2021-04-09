@@ -20,16 +20,14 @@ export default class StateManager {
     public events: Array<IEvent>
     constructor(public eventsCallback: Function) {
         this.eventsCallback = eventsCallback.bind(this)
+        this.events = this.eventsCallback()
     }
 
-    typingKeyStroke(char: string) {
-        if(char.length !== 1) {
-            throw new Error()
-        }
+    acceptFirstChar() {
         let editorStateNow = this.editorState
         let completion = editorStateNow.completion
 
-        if(completion.length > 0 && completion[0] === char) {
+        if (completion.length > 0) {
             this.acceptText(completion[0])
         }
     }
@@ -46,6 +44,7 @@ export default class StateManager {
     accept() {
         let editorStateNow = this.editorState
         let completion = editorStateNow.completion
+        debugger
         if(completion.length > 0) {
             this.acceptText(completion)
         }
@@ -68,8 +67,10 @@ export default class StateManager {
 
     showCompletion(editorStateThen: IEditorState, completionText: string) {
         let editorStateNow = this.editorState
-        completionText = completionText.replace(new RegExp("[" + '\n' + "]+$"), "")
-
+        if(!completionText) {
+            this.setCompletion("")
+            return
+        }
         if (
             editorStateNow.query.length >= editorStateThen.query.length &&
             editorStateNow.query.substr(0, editorStateThen.query.length) ===

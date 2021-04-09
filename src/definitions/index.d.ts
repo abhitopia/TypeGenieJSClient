@@ -5,3 +5,7 @@ declare global {
         FroalaEditor: Function;
     }
 }
+
+export interface TGJQuery<T> extends JQuery {
+    froalaEditor: Function
+}

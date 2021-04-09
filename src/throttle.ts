@@ -1,10 +1,9 @@
-class Throttler {
+export default class Throttler {
     private lastRequestedAt:number
     private requestThrottled:boolean
     private _requestPending:boolean
 
     constructor(public requestCallback: Function, public timeout: number) {}
-
     get requestPending() {
         // forcefully set the this._requestPending to false after timeout period
         if (!this.lastRequestedAt || Date.now() - this.lastRequestedAt > this.timeout) {
@@ -31,7 +30,8 @@ class Throttler {
         } finally {
             this.requestPending = false
             if(this.requestThrottled) {
-                this.requestCallback()
+                this.requestThrottled = false
+                await this.requestCallback()
             }
             return response
         }

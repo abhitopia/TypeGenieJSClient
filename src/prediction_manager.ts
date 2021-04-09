@@ -1,6 +1,11 @@
 import UserAPIClient from "./api";
 import {IEvent} from "./state_managers/base";
 
+interface CompletionsResponse {
+    result: Array<string>
+    error: string
+}
+
 export default class PredictionManager {
     public sessionId: string
     constructor(public apiClient: UserAPIClient) {
@@ -17,14 +22,11 @@ export default class PredictionManager {
 
     async fetchCompletions(query: string, events: Array<IEvent>): Promise<string> {
         let that = this
-        async function _requestCompletions() {
-            let response = await that.apiClient.getCompletions(that.sessionId, query, events)
-            let completions = await response.json()
+        let response = await that.apiClient.getCompletions(that.sessionId, query, events)
+        let completions = (await response.json() as CompletionsResponse)["result"]
 
-            // For now, let's take the first completion
-            let completion = completions[0]
-            return completion
-        }
-        return await new Throttler(_requestCompletions, 20).request()
+        // For now, let's take the first completion
+        let completion = completions[0]
+        return completion
     }
 }
