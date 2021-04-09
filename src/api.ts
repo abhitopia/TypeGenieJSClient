@@ -1,10 +1,8 @@
 import {IEvent} from "./state_managers/base";
 
-
 class APIHelper {
     public headers: {[name: string]: string}
     public commonPrefix: string
-
     constructor(commonPrefix: string, headers: {[name: string]: any}) {
         if(headers) {
             this.headers = headers
@@ -31,7 +29,7 @@ class APIHelper {
 
     async _request(url: string, options: {[name: string]: any}) {
         let res = await fetch(url, options)
-        let responseJson = await res.json()
+        let responseJson = await res.clone().json()
         if(responseJson["error"]) {
             throw new Error(responseJson["error"])
         }
@@ -40,17 +38,27 @@ class APIHelper {
 
     async get(endpoint: string) {
         let url = this._getUrl(endpoint)
-        return await this._request(url, {"method": "GET"})
+        return await this._request(url, {
+            "method": "GET",
+            "headers": this.headers
+        })
     }
 
     async delete(endpoint: string) {
         let url = this._getUrl(endpoint)
-        return await this._request(url, {"method": "DELETE"})
+        return await this._request(url, {
+            "method": "DELETE",
+            "headers": this.headers
+        })
     }
 
     async post(endpoint: string, json: {[name: string]: any}) {
         let url = this._getUrl(endpoint)
-        return await this._request(url, {"method": "POST", body: JSON.stringify(json)})
+        return await this._request(url, {
+            "method": "POST",
+            "body": JSON.stringify(json),
+            "headers": this.headers
+        })
     }
 
     async put(endpoint: string, json: {[name: string]: any}) {
@@ -67,7 +75,7 @@ export default class UserAPIClient {
             'Accept': 'application/json',
             "Authorization": `Bearer: ${token}`
         }
-        this.apiHelper = new APIHelper("/user/session", headers)
+        this.apiHelper = new APIHelper("/api/v1/user/session", headers)
     }
 
     async info() {
@@ -75,11 +83,11 @@ export default class UserAPIClient {
     }
 
     async createSession(): Promise<Response> {
-        return await this.apiHelper.post("/user/session", {})
+        return await this.apiHelper.post("", {})
     }
 
     async getCompletions(sessionId: string, query: string, events: Array<IEvent>) {
         let payload = {'query': query, 'events': events}
-        return await this.apiHelper.post(`/user/session/${sessionId}/completions`, payload)
+        return await this.apiHelper.post(`/${sessionId}/completions`, payload)
     }
 }
