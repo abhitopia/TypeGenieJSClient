@@ -1,18 +1,14 @@
 import {IEvent} from "./state_managers/base";
 
-class APIHelper {
+class API {
     public headers: {[name: string]: string}
     public commonPrefix: string
-    constructor(commonPrefix: string, headers: {[name: string]: any}) {
-        if(headers) {
-            this.headers = headers
-        } else {
-            this.headers = {
-                'Content-type': 'application/json',
-                'Accept': 'application/json'
-            }
+    constructor () {
+        this.headers = {
+            'Content-type': 'application/json',
+            'Accept': 'application/json'
         }
-        this.commonPrefix = commonPrefix
+        this.commonPrefix = ""
     }
 
     get baseUrl() {
@@ -36,7 +32,7 @@ class APIHelper {
         return res
     }
 
-    async get(endpoint: string) {
+    protected async get(endpoint: string) {
         let url = this._getUrl(endpoint)
         return await this._request(url, {
             "method": "GET",
@@ -44,7 +40,7 @@ class APIHelper {
         })
     }
 
-    async delete(endpoint: string) {
+    protected async delete(endpoint: string) {
         let url = this._getUrl(endpoint)
         return await this._request(url, {
             "method": "DELETE",
@@ -52,7 +48,7 @@ class APIHelper {
         })
     }
 
-    async post(endpoint: string, json: {[name: string]: any}) {
+    protected async post(endpoint: string, json: {[name: string]: any}) {
         let url = this._getUrl(endpoint)
         return await this._request(url, {
             "method": "POST",
@@ -61,58 +57,40 @@ class APIHelper {
         })
     }
 
-    async put(endpoint: string, json: {[name: string]: any}) {
+    protected async put(endpoint: string, json: {[name: string]: any}) {
         let url = this._getUrl(endpoint)
         return await this._request(url, {"method": "PUT", body: JSON.stringify(json)})
     }
 }
 
-export default class UserAPIClient {
-    public apiHelper: APIHelper
-    private renewTokenAPIHelper: APIHelper
-    private _token: string
+export default class UserAPI extends API {
     constructor(token: string) {
-        let headers: {[name: string]: string} = {
-            'Content-type': 'application/json',
-            'Accept': 'application/json',
-            "Authorization": `Bearer: ${token}`
-        }
-        this.apiHelper = new APIHelper("/api/v1/user/session", headers)
-        this.renewTokenAPIHelper = new APIHelper("/api/v1/deployment/user", headers)
-        this._token = token
+        super()
+        this.commonPrefix = "/api/v1/user/session"
+        this.headers["Authorization"] = `Bearer: ${token}`
 
         this.renewToken = this.renewToken.bind(this)
-        setInterval(this.renewToken, 60*60*30*1000)
-    }
 
-    set token(value: string) {
-        let headers = {
-            'Content-type': 'application/json',
-            'Accept': 'application/json',
-            "Authorization": `Bearer: ${value}`
-        }
-        this.apiHelper.headers = headers
-        this.renewTokenAPIHelper.headers = headers
+        // Renew every 15 mins.
+        setInterval(this.renewToken, 15*60*1000)
     }
 
     async info(): Promise<Response> {
-        return await this.apiHelper.get("")
+        return await this.get("")
     }
 
     async createSession(): Promise<Response> {
-        return await this.apiHelper.post("", {})
+        return await this.post("", {})
     }
 
     async getCompletions(sessionId: string, query: string, events: Array<IEvent>) {
         let payload = {'query': query, 'events': events}
-        return await this.apiHelper.post(`/${sessionId}/completions`, payload)
+        return await this.post(`/${sessionId}/completions`, payload)
     }
 
     async renewToken() {
-        let response = await this.info()
+        let response = await this.get(`/renew`)
         let responseJSON = await response.json()
-        response = await this.renewTokenAPIHelper.get(`/${responseJSON["result"]['userId']}/token`)
-        responseJSON = await response.json()
-        this.token = responseJSON["result"]["token"]
+        this.headers["Authorization"] = `Bearer: ${responseJSON["result"]["token"]}`
     }
 }

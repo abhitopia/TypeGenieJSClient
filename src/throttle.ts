@@ -1,37 +1,41 @@
+import {v4, v4 as uuidv4} from "uuid"
+
 export default class Throttler {
-    private lastRequestedAt:number
-    private requestThrottled:boolean
-    private _requestPending:boolean
+    private lastCalledAt:number
+    private callThrottled:boolean
+    private _callPending:boolean
 
-    constructor(public requestCallback: Function, public timeout: number) {}
-    get requestPending() {
+    constructor(public callback: Function, public timeout: number) {}
+
+    get callPending() {
         // forcefully set the this._requestPending to false after timeout period
-        if (!this.lastRequestedAt || Date.now() - this.lastRequestedAt > this.timeout) {
-            this._requestPending = false
+        if (!this.lastCalledAt || Date.now() - this.lastCalledAt > this.timeout) {
+            this._callPending = false
         }
-        return this._requestPending
+        return this._callPending
     }
 
-    set requestPending(value) {
-        this._requestPending = value
+    set callPending(value) {
+        this._callPending = value
     }
 
-    async request() {
-        if (this.requestPending) {
-            this.requestThrottled = true
+    async call() {
+        if (this.callPending) {
+            this.callThrottled = true
             return
         }
 
         let response = null
         try {
-            this.lastRequestedAt = Date.now()
-            this.requestPending = true
-            response = await this.requestCallback()
+            this.lastCalledAt = Date.now()
+            this.callPending = true
+            let i = v4()
+            response = await this.callback()
         } finally {
-            this.requestPending = false
-            if(this.requestThrottled) {
-                this.requestThrottled = false
-                await this.requestCallback()
+            this.callPending = false
+            if(this.callThrottled) {
+                this.callThrottled = false
+                await this.callback()
             }
             return response
         }
