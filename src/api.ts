@@ -69,6 +69,8 @@ class APIHelper {
 
 export default class UserAPIClient {
     public apiHelper: APIHelper
+    private renewTokenAPIHelper: APIHelper
+    private _token: string
     constructor(token: string) {
         let headers: {[name: string]: string} = {
             'Content-type': 'application/json',
@@ -76,9 +78,24 @@ export default class UserAPIClient {
             "Authorization": `Bearer: ${token}`
         }
         this.apiHelper = new APIHelper("/api/v1/user/session", headers)
+        this.renewTokenAPIHelper = new APIHelper("/api/v1/deployment/user", headers)
+        this._token = token
+
+        this.renewToken = this.renewToken.bind(this)
+        setInterval(this.renewToken, 60*60*30*1000)
     }
 
-    async info() {
+    set token(value: string) {
+        let headers = {
+            'Content-type': 'application/json',
+            'Accept': 'application/json',
+            "Authorization": `Bearer: ${value}`
+        }
+        this.apiHelper.headers = headers
+        this.renewTokenAPIHelper.headers = headers
+    }
+
+    async info(): Promise<Response> {
         return await this.apiHelper.get("")
     }
 
@@ -89,5 +106,13 @@ export default class UserAPIClient {
     async getCompletions(sessionId: string, query: string, events: Array<IEvent>) {
         let payload = {'query': query, 'events': events}
         return await this.apiHelper.post(`/${sessionId}/completions`, payload)
+    }
+
+    async renewToken() {
+        let response = await this.info()
+        let responseJSON = await response.json()
+        response = await this.renewTokenAPIHelper.get(`/${responseJSON["result"]['userId']}/token`)
+        responseJSON = await response.json()
+        this.token = responseJSON["result"]["token"]
     }
 }

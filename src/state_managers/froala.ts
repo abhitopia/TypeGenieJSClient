@@ -1,6 +1,21 @@
 import StateManager, {IEditorState} from "./base";
 import {v4 as uuidv4} from "uuid"
-import {FroalaEditor} from "../definitions/froala";
+import {FroalaEditor, HTML} from "../definitions/froala";
+import {TGJQuery} from "../definitions";
+
+export class FroalaEditorV2toV3 {
+    public html: HTML
+    public el: HTMLElement
+    constructor(public froalaJSObject: TGJQuery<HTMLElement>) {
+        let that = this
+        this.html = {
+            "insert": function(html: string, clean?: boolean, doSplit?:boolean): any {
+                that.froalaJSObject.froalaEditor("html.insert", html, clean)
+            }
+        }
+        this.el = this.froalaJSObject.prev("div.fr-box.fr-basic.fr-top").find(".fr-element.fr-view").get(0)
+    }
+}
 
 
 export default class FroalaStateManager extends StateManager {
@@ -62,7 +77,7 @@ export default class FroalaStateManager extends StateManager {
         }
     }
 
-    acceptText(text: string) {
+    acceptCompletion(text: string) {
         const currentCompletionText = this.getCompletion()
         this.setCompletion(currentCompletionText.slice(text.length))
         this.froalaEditor.html.insert(`${text}`, false)

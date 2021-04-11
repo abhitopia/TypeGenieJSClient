@@ -19,7 +19,7 @@ let plugins = [
     })
 ]
 
-let pluginConfig = {
+let typegenieConfig = {
     devtool: "source-map",
     optimization: {
         minimize: process.env.NODE_ENV === "development" ? false : true
@@ -32,7 +32,7 @@ let pluginConfig = {
         path: path.resolve(__dirname, "dist/typegenie"),
         filename: "[name].js",
         sourceMapFilename: "[name].js.map",
-        library: "bind_typegenie",
+        library: "UserAPIClient",
         libraryTarget: "var"
     },
     plugins: plugins,
@@ -69,9 +69,4 @@ let pluginConfig = {
     }
 }
 
-module.exports = function(env) {
-    if (env && env.build && env.build === "build") {
-        console.log("Executing the script in build mode.")
-    }
-    return pluginConfig
-}
+module.exports = [typegenieConfig]

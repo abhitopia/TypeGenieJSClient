@@ -28,7 +28,7 @@ export default class StateManager {
         let completion = editorStateNow.completion
 
         if (completion.length > 0) {
-            this.acceptText(completion[0])
+            this.acceptCompletion(completion[0])
         }
     }
 
@@ -37,16 +37,15 @@ export default class StateManager {
         let completion = editorStateNow.completion
         if(completion.length > 0) {
             let toAccept = completion.split(" ")[0]
-            this.acceptText(toAccept)
+            this.acceptCompletion(toAccept)
         }
     }
 
     accept() {
         let editorStateNow = this.editorState
         let completion = editorStateNow.completion
-        debugger
         if(completion.length > 0) {
-            this.acceptText(completion)
+            this.acceptCompletion(completion)
         }
     }
 
@@ -101,7 +100,7 @@ export default class StateManager {
         throw new Error("NotImplemented")
     }
 
-    acceptText(text: string) {
+    acceptCompletion(text: string) {
         throw new Error("NotImplemented")
     }
 
