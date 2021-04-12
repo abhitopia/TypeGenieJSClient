@@ -29,7 +29,7 @@ let typegenieConfig = {
     },
     output: {
         publicPath: ".",
-        path: path.resolve(__dirname, "dist/typegenie"),
+        path: path.resolve(__dirname, "dist"),
         filename: "[name].js",
         sourceMapFilename: "[name].js.map",
         library: "typegenie",

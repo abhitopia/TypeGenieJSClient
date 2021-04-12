@@ -66,13 +66,11 @@ class API {
 export default class UserAPI extends API {
     constructor(token: string) {
         super()
-        this.commonPrefix = "/api/v1/user/session"
+        this.commonPrefix = "/api/v1/user"
         this.headers["Authorization"] = `Bearer: ${token}`
 
         this.renewToken = this.renewToken.bind(this)
-
-        // Renew every 15 mins.
-        setInterval(this.renewToken, 15*60*1000)
+        this.renewTokenPeriodically()
     }
 
     async info(): Promise<Response> {
@@ -80,17 +78,29 @@ export default class UserAPI extends API {
     }
 
     async createSession(): Promise<Response> {
-        return await this.post("", {})
+        return await this.post("/session", {})
     }
 
     async getCompletions(sessionId: string, query: string, events: Array<IEvent>) {
         let payload = {'query': query, 'events': events}
-        return await this.post(`/${sessionId}/completions`, payload)
+        return await this.post(`/session/${sessionId}/completions`, payload)
+    }
+
+    private async renewTokenPeriodically() {
+        let response = await this.renewToken()
+        let responseJSON = await response.json()
+        let expiryDateStr = responseJSON["result"]["expires_at"] as string
+        let expiryDateInMs = Date.parse(expiryDateStr)
+
+        // Renew 5 mins before the token gets expired.
+        let runIn = expiryDateInMs - new Date().getTime() - 5 * 60 * 1000
+        setInterval(this.renewToken, runIn)
     }
 
     async renewToken() {
         let response = await this.get(`/renew`)
-        let responseJSON = await response.json()
+        let responseJSON = await response.clone().json()
         this.headers["Authorization"] = `Bearer: ${responseJSON["result"]["token"]}`
+        return response
     }
 }

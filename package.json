@@ -1,7 +1,12 @@
 {
-  "name": "TypeGenie",
-  "version": "1",
+  "name": "typegenie",
+  "version": "0.0.1",
   "description": "TypeGenie Javascript library.",
+  "main": "dist/typegenie.js",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "dependencies": {
     "@types/he": "^1.1.1",
     "@types/jquery": "^3.5.5",

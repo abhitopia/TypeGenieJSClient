@@ -5,5 +5,4 @@ export interface HTML {
 export class FroalaEditor {
     public html: HTML;
     public el: Element
-
 }
