@@ -1,17 +1,17 @@
-# TypeGenieJSClient
+# TypeGenie JS Library
 Contains the Javascript client library and frontend editor integrations for TypeGenie.
 
 
 # Installation
 ```bash
-npm install typegenie`
+npm install typegeniejs`
 ```
 
 # Usage
 
 ## Authenticate user
 ```js
-import {UserAPI} from "typegenie"
+import {UserAPI} from "typegeniejs"
 let api_client = UserAPI(token=<USER_TOKEN>)  // This api client automatrically renews tokens
 ```
 
