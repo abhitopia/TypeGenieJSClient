@@ -26,8 +26,10 @@ editor.connect_typegenie(api_client, events_callback)
 
 ### FroalaEditor V2
 ```js
-let editor = $("#selector").editor
-editor.connect_typegenie(api_client, events_callback)
+// Initialize Froala editor.
+$("#selector").froalaEditor()
+
+$("#selector").froalaEditor.connect_typegenie(api_client, events_callback)
 ```
 
 
