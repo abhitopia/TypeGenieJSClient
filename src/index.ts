@@ -1,6 +1,6 @@
 import {TypeGenieEventBinder} from "./event_binder";
 import FroalaStateManager, {FroalaEditorV2toV3} from "./state_managers/froala";
-import UserAPIClient from "./api";
+import UserAPI from "./api";
 import {HTML} from "./definitions/froala";
 
 
@@ -12,7 +12,7 @@ function froala_v2_binding() {
         _jQuery.prototype.froalaEditor = function () {
             var returnValue = _froalaEditor.apply(this, arguments);
             this.froalaEditor.el =  this
-            this.froalaEditor.connect_typegenie = function (apiClient: UserAPIClient, eventsCallback: Function) {
+            this.froalaEditor.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
                 let editor = new FroalaEditorV2toV3(this.el)
                 let stateManager = new FroalaStateManager(eventsCallback, editor)
                 new TypeGenieEventBinder(stateManager, apiClient)
@@ -34,7 +34,7 @@ function froala_v3_binding() {
             constructor(...args: any[]) {
                 super(...args);
                 let that = this
-                this.connect_typegenie = function (apiClient: UserAPIClient, eventsCallback: Function) {
+                this.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
                     let stateManager = new FroalaStateManager(eventsCallback, that)
                     new TypeGenieEventBinder(stateManager, apiClient)
                 }
@@ -46,4 +46,6 @@ function froala_v3_binding() {
 froala_v2_binding()
 froala_v3_binding()
 
-module.exports = UserAPIClient
+module.exports = {
+    UserAPI: UserAPI
+}

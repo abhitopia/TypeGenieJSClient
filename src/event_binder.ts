@@ -124,7 +124,7 @@ export class TypeGenieEventBinder {
         this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [], function (key: string, keyCode: number) {return true}, this.onAccept)
         this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept)
         this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
-            let completion = this.stateManager.editorState.completion
+            let completion = that.stateManager.editorState.completion
 
             // Overtyping.
             if (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) {

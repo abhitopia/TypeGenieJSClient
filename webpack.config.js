@@ -32,7 +32,7 @@ let typegenieConfig = {
         path: path.resolve(__dirname, "dist/typegenie"),
         filename: "[name].js",
         sourceMapFilename: "[name].js.map",
-        library: "UserAPIClient",
+        library: "typegenie",
         libraryTarget: "var"
     },
     plugins: plugins,
