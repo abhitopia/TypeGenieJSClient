@@ -33,7 +33,7 @@ let typegenieConfig = {
         filename: "[name].js",
         sourceMapFilename: "[name].js.map",
         library: "typegenie",
-        libraryTarget: "var"
+        libraryTarget: "umd"
     },
     plugins: plugins,
     resolve: {
