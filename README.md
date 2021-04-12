@@ -4,7 +4,7 @@ Contains the Javascript client library and frontend editor integrations for Type
 
 # Installation
 ```bash
-npm install typegeniejs`
+npm install typegeniejs
 ```
 
 # Usage
