@@ -2,7 +2,7 @@
 Contains the Javascript client library and frontend editor integrations for TypeGenie.
 
 
-# Installation (coming soon)
+# Installation
 ```bash
 npm install typegenie`
 ```
