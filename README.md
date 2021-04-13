@@ -1,17 +1,17 @@
-# TypeGenieJSClient
+# TypeGenie JS Library
 Contains the Javascript client library and frontend editor integrations for TypeGenie.
 
 
-# Installation (coming soon)
+# Installation
 ```bash
-npm install typegenie`
+npm install typegeniejs
 ```
 
 # Usage
 
 ## Authenticate user
 ```js
-import {UserAPI} from "typegenie"
+import {UserAPI} from "typegeniejs"
 let api_client = UserAPI(token=<USER_TOKEN>)  // This api client automatrically renews tokens
 ```
 
@@ -26,8 +26,10 @@ editor.connect_typegenie(api_client, events_callback)
 
 ### FroalaEditor V2
 ```js
-let editor = $("#selector").editor
-editor.connect_typegenie(api_client, events_callback)
+// Initialize Froala editor.
+$("#selector").froalaEditor()
+
+$("#selector").froalaEditor.connect_typegenie(api_client, events_callback)
 ```
 
 
