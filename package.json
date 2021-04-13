@@ -1,6 +1,6 @@
 {
   "name": "typegeniejs",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "description": "TypeGenie Javascript library.",
   "main": "dist/typegenie.js",
   "types": "src/definitions/index.d.ts",
@@ -32,7 +32,8 @@
   },
   "scripts": {
     "build": "NODE_ENV=production webpack --config webpack.config.js --mode=development --env.build=build",
-    "watch": "NODE_ENV=development watch-run -p 'src/**' webpack --config webpack.config.js --mode=development --env.build=build"
+    "watch": "NODE_ENV=development watch-run -p 'src/**' webpack --config webpack.config.js --mode=development --env.build=build",
+    "build:dev": "NODE_ENV=development webpack --config webpack.config.js --mode=development --env.build=build"
   },
   "devDependencies": {
     "@types/node": "^14.14.37",

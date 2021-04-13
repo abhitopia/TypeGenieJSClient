@@ -18,7 +18,7 @@ let typegenieConfig = {
     },
     output: {
         publicPath: ".",
-        path: path.resolve(__dirname, "dist"),
+        path: process.env.NODE_ENV === "development" ? path.resolve(__dirname, "test-package/node_modules/typegeniejs/dist") : path.resolve(__dirname, "dist"),
         filename: "[name].js",
         sourceMapFilename: "[name].js.map",
         library: "typegenie",
