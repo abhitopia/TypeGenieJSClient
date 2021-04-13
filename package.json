@@ -3,6 +3,7 @@
   "version": "0.0.3",
   "description": "TypeGenie Javascript library.",
   "main": "dist/typegenie.js",
+  "types": "src/definitions/index.d.ts",
   "homepage": "https://github.com/abhitopia/TypeGenieJSClient",
   "repository": {
     "type": "git",
@@ -10,6 +11,7 @@
   },
   "files": [
     "dist/",
+    "src/definitions",
     "README.md"
   ],
   "dependencies": {
