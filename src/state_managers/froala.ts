@@ -43,20 +43,14 @@ export default class FroalaStateManager extends StateManager {
         sel.addRange(range);
     }
 
-    private getTextBeforeCaret(): string {
-        const selection = window.getSelection()
-        let range = document.createRange();
-        range.setStart(this.froalaEditor.el, 0)
-        range.setEnd(selection.anchorNode, selection.anchorOffset)
-        return range.cloneContents().textContent
-    }
-
     getQuery(): string {
         const selection = window.getSelection()
         let range = document.createRange();
-        range.setStart(this.froalaEditor.el, 0)
-        range.setEnd(selection.anchorNode, selection.anchorOffset)
-        return range.cloneContents().textContent
+        if(selection.anchorNode) {
+            range.setStart(this.froalaEditor.el, 0)
+            range.setEnd(selection.anchorNode, selection.anchorOffset)
+            return range.cloneContents().textContent
+        }
     }
 
     getCompletion(): string {

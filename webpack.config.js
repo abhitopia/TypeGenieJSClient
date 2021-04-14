@@ -1,21 +1,10 @@
 let path = require("path")
 let webpack = require("webpack")
 
-
-let showServerSettings = true
-if (process.env.NODE_ENV === "development") {
-    showServerSettings = true
-} else {
-    showServerSettings = false
-}
-
 let plugins = [
     new webpack.ProvidePlugin({
         $: "jquery",
         jQuery: "jquery"
-    }),
-    new webpack.DefinePlugin({
-        SHOW_SERVER_SETTINGS: showServerSettings
     })
 ]
 
@@ -29,7 +18,7 @@ let typegenieConfig = {
     },
     output: {
         publicPath: ".",
-        path: path.resolve(__dirname, "dist"),
+        path: process.env.NODE_ENV === "development" ? path.resolve(__dirname, "test-package/node_modules/typegeniejs/dist") : path.resolve(__dirname, "dist"),
         filename: "[name].js",
         sourceMapFilename: "[name].js.map",
         library: "typegenie",
@@ -38,9 +27,6 @@ let typegenieConfig = {
     plugins: plugins,
     resolve: {
         modules: [path.resolve(__dirname, "src"), "node_modules"],
-        alias: {
-            truecomposeapi: path.resolve(__dirname, "../truecomposeapi/src")
-        },
         extensions: [".ts", ".tsx", ".js"]
     },
     module: {
@@ -48,25 +34,7 @@ let typegenieConfig = {
             test: /\.tsx?$/,
             use: "ts-loader",
             exclude: /node_modules/,
-        },
-            {
-                test: /\.css$/,
-                // exclude: /node_modules/,
-                use: ["style-loader", "css-loader"]
-            },
-            {
-                test: /\.html$/,
-                exclude: /node_modules/,
-                use: { loader: "html-loader" }
-            },
-            {
-                test: /\.(png|jpg|gif)$/,
-                use: [{
-                    loader: "file-loader",
-                    options: {}
-                }]
-            }]
+        }]
     }
 }
-
 module.exports = [typegenieConfig]
