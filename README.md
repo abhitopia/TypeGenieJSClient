@@ -12,7 +12,7 @@ npm install typegeniejs
 ## Authenticate user
 ```js
 import {UserAPI} from "typegeniejs"
-let api_client = UserAPI(token=<USER_TOKEN>)  // This api client automatrically renews tokens
+let api_client = UserAPI(<USER_TOKEN>)  // This api client automatrically renews tokens
 ```
 
 ## Connect FroalaEditor
