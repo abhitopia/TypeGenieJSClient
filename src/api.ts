@@ -15,7 +15,7 @@ class API {
         if(window.TYPEGENIE_API_URL) {
             return window.TYPEGENIE_API_URL
         } else {
-            return "http://api.typegenie.net"
+            return "https://api.typegenie.net"
         }
     }
 
