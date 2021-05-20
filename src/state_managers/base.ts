@@ -1,3 +1,5 @@
+import {TypeGenieTelemetryBuffer} from "../telemetry/telemetry_buffer";
+
 export interface IEvent {
     author_id?: string;
     author: "SYSTEM" | "AGENT" | "USER";
@@ -18,7 +20,7 @@ export interface IEditorState {
 
 export default class StateManager {
     public events: Array<IEvent>
-    constructor(public eventsCallback: Function) {
+    constructor(public eventsCallback: Function, public telemetryBuffer: TypeGenieTelemetryBuffer) {
         this.eventsCallback = eventsCallback.bind(this)
         this.events = this.eventsCallback()
     }
@@ -29,6 +31,7 @@ export default class StateManager {
 
         if (completion.length > 0) {
             this.acceptCompletion(completion[0])
+            this.telemetryBuffer.addEvent(this.telemetryBuffer.createTelemetryEvent(Date.now(),TypeGenieTelemetryBuffer.Action.ACCEPT_FIRST_CHAR, completion[0]))
         }
     }
 
@@ -38,6 +41,7 @@ export default class StateManager {
         if(completion.length > 0) {
             let toAccept = completion.split(" ")[0]
             this.acceptCompletion(toAccept)
+            this.telemetryBuffer.addEvent(this.telemetryBuffer.createTelemetryEvent(Date.now(),TypeGenieTelemetryBuffer.Action.ACCEPT_PARTIAL_COMPLETION, toAccept))
         }
     }
 
@@ -46,6 +50,7 @@ export default class StateManager {
         let completion = editorStateNow.completion
         if(completion.length > 0) {
             this.acceptCompletion(completion)
+            this.telemetryBuffer.addEvent(this.telemetryBuffer.createTelemetryEvent(Date.now(),TypeGenieTelemetryBuffer.Action.ACCEPT_COMPLETION, completion))
         }
     }
 

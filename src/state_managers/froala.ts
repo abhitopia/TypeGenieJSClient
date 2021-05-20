@@ -2,6 +2,7 @@ import StateManager, {IEditorState} from "./base";
 import {v4 as uuidv4} from "uuid"
 import {FroalaEditor, HTML} from "../definitions/froala";
 import {TGJQuery} from "../definitions";
+import {TypeGenieTelemetryBuffer} from "../telemetry/telemetry_buffer";
 
 export class FroalaEditorV2toV3 {
     public html: HTML
@@ -21,8 +22,8 @@ export class FroalaEditorV2toV3 {
 export default class FroalaStateManager extends StateManager {
     private completionId: string
     private completionClass: string
-    constructor(public eventsCallback: Function, public froalaEditor: FroalaEditor) {
-        super(eventsCallback)
+    constructor(public eventsCallback: Function, public froalaEditor: FroalaEditor, public telemetryBuffer: TypeGenieTelemetryBuffer) {
+        super(eventsCallback, telemetryBuffer)
         this.completionId = `tg-completion-${uuidv4()}`
         this.completionClass = "tg-completion"
     }

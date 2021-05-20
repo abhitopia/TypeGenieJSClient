@@ -24,7 +24,6 @@ export default class PredictionManager {
         let that = this
         let response = await that.apiClient.getCompletions(that.sessionId, query, events)
         let completions = (await response.json() as CompletionsResponse)["result"]
-
         // For now, let's take the first completion
         let completion = completions[0]
         return completion
