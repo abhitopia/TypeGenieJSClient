@@ -4,16 +4,18 @@ import BrowserEventBinder, {DEFAULT, ModifierKeys} from "./utils/browser_event_b
 import StateManager from "./state_managers/base";
 import UserAPI from "./api";
 import {IGNORE_KEYCODES, KeyEnum, REJECT_KEYCODES} from "./constants";
+import {TypeGenieTelemetryBuffer} from "./telemetry/telemetry_buffer";
 
 
 export class TypeGenieEventBinder {
     public predictionManager: PredictionManager
     public eventBinder: BrowserEventBinder
     public fetchAndShowCompletionsThrottler: Throttler
-    constructor(public stateManager: StateManager, apiClient: UserAPI) {
+    constructor(public stateManager: StateManager, apiClient: UserAPI, public telemetryBuffer: TypeGenieTelemetryBuffer) {
         let that = this
         this.predictionManager = new PredictionManager(apiClient)
         this.predictionManager.createSession()
+
 
         // Bind the functions.
         this.onAccept = this.onAccept.bind(this)
@@ -93,6 +95,10 @@ export class TypeGenieEventBinder {
             return
         }
         let completion = await that.predictionManager.fetchCompletions(currentEditorState.query, that.stateManager.events)
+
+        // push event fetch event into buffer
+        this.telemetryBuffer.addEvent(this.telemetryBuffer.createTelemetryEvent(Date.now(), TypeGenieTelemetryBuffer.Action.FETCH_COMPLETION, completion))
+
 
         // Check if there is a completion already
         if(!that.stateManager.editorState.completion) {
