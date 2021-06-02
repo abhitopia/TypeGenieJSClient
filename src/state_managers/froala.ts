@@ -19,18 +19,16 @@ export class FroalaEditorV2toV3 {
 
 
 export default class FroalaStateManager extends StateManager {
-    private completionId: string
     private completionClass: string
     constructor(public eventsCallback: Function, public froalaEditor: FroalaEditor) {
         super(eventsCallback)
-        this.completionId = `tg-completion-${uuidv4()}`
         this.completionClass = "tg-completion"
     }
 
     private removeCompletion() {
-        let completion = document.getElementById(this.completionId)
-        if (completion) {
-            completion.remove()
+        let completionElements = document.getElementsByClassName(this.completionClass)
+        for(let i=0; i<completionElements.length; i++){
+            completionElements[i].remove()
         }
     }
 
@@ -54,8 +52,9 @@ export default class FroalaStateManager extends StateManager {
     }
 
     getCompletion(): string {
-        let completionElement = document.getElementById(this.completionId)
-        if(completionElement) {
+        let completionElements = document.getElementsByClassName(this.completionClass)
+        if(completionElements.length > 0) {
+            let completionElement = completionElements[0] as HTMLElement
             return completionElement.innerText
         } else {
             return ""
@@ -66,7 +65,7 @@ export default class FroalaStateManager extends StateManager {
         this.removeCompletion()
         if(completion) {
             let { anchorNode, anchorOffset } = window.getSelection()
-            this.froalaEditor.html.insert(`<span style="color: rgba(0, 0, 0, 0.5)" id="${this.completionId}" class="${this.completionClass}">${completion}</span>`, false)
+            this.froalaEditor.html.insert(`<span style="color: rgba(0, 0, 0, 0.5)" class="${this.completionClass}">${completion}</span>`, false)
             this.setCaret(anchorNode, anchorOffset)
         }
     }
