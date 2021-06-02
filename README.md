@@ -12,7 +12,7 @@ npm install typegeniejs
 ## Authenticate user
 ```js
 import {UserAPI} from "typegeniejs"
-let api_client = UserAPI(token=<USER_TOKEN>)  // This api client automatrically renews tokens
+let api_client = UserAPI(<USER_TOKEN>)  // This api client automatrically renews tokens
 ```
 
 ## Connect FroalaEditor
@@ -20,7 +20,7 @@ TypeGenie library monkey patches FroalaEditor to introduce a `connect_typegenie`
 
 ### FroalaEditor V3
 ```js
-let editor = new FroalaEditor()
+let editor = new FroalaEditor("#selector")
 editor.connect_typegenie(api_client, events_callback)
 ```
 
@@ -28,7 +28,6 @@ editor.connect_typegenie(api_client, events_callback)
 ```js
 // Initialize Froala editor.
 $("#selector").froalaEditor()
-
 $("#selector").froalaEditor.connect_typegenie(api_client, events_callback)
 ```
 
