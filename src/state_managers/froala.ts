@@ -22,8 +22,8 @@ export class FroalaEditorV2toV3 {
 export default class FroalaStateManager extends StateManager {
     private completionId: string
     private completionClass: string
-    constructor(public eventsCallback: Function, public froalaEditor: FroalaEditor, public telemetryBuffer: TypeGenieTelemetryBuffer) {
-        super(eventsCallback, telemetryBuffer)
+    constructor(public eventsCallback: Function, public froalaEditor: FroalaEditor) {
+        super(eventsCallback)
         this.completionId = `tg-completion-${uuidv4()}`
         this.completionClass = "tg-completion"
     }

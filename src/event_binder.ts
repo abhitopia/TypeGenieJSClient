@@ -15,7 +15,10 @@ export class TypeGenieEventBinder {
         let that = this
         this.predictionManager = new PredictionManager(apiClient)
         this.predictionManager.createSession()
-
+            .then(() => {
+                // Bind sessionId to telemetry
+                this.telemetryBuffer.sessionId = this.predictionManager.sessionId;
+            })
 
         // Bind the functions.
         this.onAccept = this.onAccept.bind(this)
@@ -36,6 +39,8 @@ export class TypeGenieEventBinder {
         this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
             let completion = that.stateManager.editorState.completion
 
+            that.telemetryBuffer.iterateEditorState(key, completion);
+            
             // Overtyping.
             if (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) {
                 return true
@@ -95,9 +100,6 @@ export class TypeGenieEventBinder {
             return
         }
         let completion = await that.predictionManager.fetchCompletions(currentEditorState.query, that.stateManager.events)
-
-        // push event fetch event into buffer
-        this.telemetryBuffer.addEvent(this.telemetryBuffer.createTelemetryEvent(Date.now(), TypeGenieTelemetryBuffer.Action.FETCH_COMPLETION, completion))
 
 
         // Check if there is a completion already

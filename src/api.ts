@@ -1,5 +1,6 @@
 import {IEvent} from "./state_managers/base";
-///
+
+
 class API {
     public headers: {[name: string]: string}
     public commonPrefix: string

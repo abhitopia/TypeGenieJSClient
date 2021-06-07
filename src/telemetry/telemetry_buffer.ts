@@ -1,79 +1,111 @@
 // Interfaces
-interface TelemetryEvent  {
+
+interface StateIteration  {
     timestamp : number,
-    action: TypeGenieTelemetryBuffer.Action,
-    value: any
+    text: string,
+    completion: string,
+    keystroke: string
 }
+
+interface SessionHistory {
+    session_id: string,
+    stateHistory: StateIteration[]
+}
+
 
 interface TypeGenieTelemetryBufferInterface {
 
-    createTelemetryEvent(timestamp: number, action: TypeGenieTelemetryBuffer.Action, value: any) : TelemetryEvent;
-    addEvent(event: TelemetryEvent) : void;
-    removeEvent(index: number) : void;
 
 }
 
 
 
-export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterface{
+export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterface {
 
-    private _events : TelemetryEvent[];
+    private _sessionHistory : SessionHistory;
+    private _editor: any;
 
-    get events() {
-        return this._events;
+    get sessionHistory(): SessionHistory {
+        return this._sessionHistory;
     }
 
-    set events(value : TelemetryEvent[]) {
-        this._events = value;
+    set sessionHistory(value: SessionHistory) {
+        this._sessionHistory = value;
     }
 
-    constructor() {
-        this.events = [];
-        console.log('Initializing TipeGenieTelemetryBuffer')
+    set sessionId(value: string) {
+        this._sessionHistory.session_id = value
     }
 
-    addEvent(event: TelemetryEvent): void {
-        this._events.push(event)
+    get sessionId() {
+        return this._sessionHistory.session_id;
     }
 
-    removeEvent(index: number): void {
-        this._events.slice(index,1)
+    get currentStateIteration() {
+        return this._sessionHistory.stateHistory[this._sessionHistory.stateHistory.length - 1];
     }
 
-    clearEvents(): void {
-        this.events = [];
+    set currentStateIteration(value) {
+        this._sessionHistory.stateHistory[this._sessionHistory.stateHistory.length - 1] = value;
     }
 
-    createTelemetryEvent(timestamp: number, action: TypeGenieTelemetryBuffer.Action, value: any): TelemetryEvent {
 
-        return  {
-            action: action,
-            timestamp: timestamp,
-            value: value
-            }
+    constructor(private editor: any) {
+        this.editor = editor;
+        this.sessionHistory = {session_id: null, stateHistory: []};
+        console.log('Initializing TipeGenieTelemetryBuffer with state: ', this.sessionHistory);
+    }
+
+
+    initStateHistory(): void {
+        this.currentStateIteration = {timestamp: null, keystroke: null, text: this.getEditorContent(), completion: null};
+    }
+
+
+    getEditorContent() : string {
+        throw new Error("Not implemented");
+    }
+
+    resetStateHistory() {
+        this.sessionHistory.stateHistory = [];
+        this.initStateHistory();
+    }
+
+    prepareNextStateIteration() {
+        const newState : StateIteration = {timestamp: null, text: this.getEditorContent() , completion: null, keystroke: null};
+        this.sessionHistory.stateHistory.push(newState);
+    }
+
+
+    closeCurrentStateIteration(keystroke: any, completion: string) {
+        if(this.currentStateIteration === undefined) {
+            this.initStateHistory();
         }
+        this.currentStateIteration.completion = completion;
+        this.currentStateIteration.timestamp = Date.now();
+        this.currentStateIteration.keystroke = keystroke;
+    }
 
-     startTelemetryReport(interval: number) {
+
+    iterateEditorState(keystroke: string, completion: string) {
+        this.closeCurrentStateIteration(keystroke, completion);
+        this.prepareNextStateIteration();
+
+    }
+
+
+    startTelemetryReport(interval: number) {
+        console.log('Calling telemetry report');
         const context = this;
         setInterval(() => {
-            if(context.events.length > 0) {
-                console.log('Will report: ', context.events);
-                context.clearEvents();
+            if(context.sessionHistory.stateHistory.length > 0 && context.sessionId!=null) {
+                console.log('Will report: ', context.sessionHistory.stateHistory);
+                this.resetStateHistory();
             } else {
-                console.log('No events to report');
+                console.log('Session: ' + context.sessionId + ' has no events to report');
             }
         }, interval)
      }
 
 }
 
-
-// Namespace for actions
-export namespace TypeGenieTelemetryBuffer {
-    export enum Action {
-        ACCEPT_FIRST_CHAR,
-        ACCEPT_PARTIAL_COMPLETION,
-        ACCEPT_COMPLETION,
-        FETCH_COMPLETION
-    }
-}
