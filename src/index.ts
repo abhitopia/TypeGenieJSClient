@@ -3,9 +3,16 @@ import FroalaStateManager, {FroalaEditorV2toV3} from "./state_managers/froala";
 import UserAPI from "./api";
 import {HTML} from "./definitions/froala";
 import {TypeGenieTelemetryBuffer} from "./telemetry/telemetry_buffer";
-// import {} from "textversionjs";
-const textversionjs = require("textversionjs");
 
+const froala_content_processor = (content: string) : string => {
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(content, 'text/html');
+    const completionChild = htmlDoc.getElementsByTagName('span');
+    for(let index = 0; index < completionChild.length; index++) {
+        completionChild[index].parentNode.removeChild(completionChild[index]);
+    }
+    return htmlDoc.body.innerText;
+}
 
 function froala_v2_binding() {
     // Monkey patching for Froala v2
@@ -18,7 +25,7 @@ function froala_v2_binding() {
             this.froalaEditor.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
                 console.log('Running connect_typegenie on v2');
                 let editor = new FroalaEditorV2toV3(this.el)
-                let telemetryBuffer = new TypeGenieTelemetryBuffer(editor, ()=> processContent(this.froalaEditor.html.get()));
+                let telemetryBuffer = new TypeGenieTelemetryBuffer(editor, ()=> froala_content_processor(this.froalaEditor.html.get()));
                 let stateManager = new FroalaStateManager(eventsCallback, editor);
                 new TypeGenieEventBinder(stateManager, apiClient, telemetryBuffer);
             }
@@ -29,15 +36,6 @@ function froala_v2_binding() {
     }
 }
 
-const froala_content_processor = (content: string) : string => {
-    const parser = new DOMParser();
-    const htmlDoc = parser.parseFromString(content, 'text/html');
-    const completionChild = htmlDoc.getElementsByTagName('span');
-    for(let index = 0; index < completionChild.length; index++) {
-        completionChild[index].parentNode.removeChild(completionChild[index]);
-    }
-    return htmlDoc.body.innerText;
-}
 
 
 function froala_v3_binding() {
