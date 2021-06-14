@@ -39,8 +39,6 @@ export class TypeGenieEventBinder {
         this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
             let completion = that.stateManager.editorState.completion
 
-            that.telemetryBuffer.iterateEditorState(key, completion);
-            
             // Overtyping.
             if (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) {
                 return true
@@ -59,14 +57,18 @@ export class TypeGenieEventBinder {
     async onRemoveCompletion(key: string, keyCode: number) {
         let editorState = this.stateManager.editorState
         this.stateManager.showCompletion(editorState, "")
+        this.telemetryBuffer.iterateEditorState(key, keyCode);
     }
 
     async onAccept(key: string, keyCode: number) {
         this.stateManager.accept()
+        this.telemetryBuffer.iterateEditorState(key, keyCode);
     }
 
     async onTypingKeystroke(key: string, keyCode: number) {
         let completion = this.stateManager.editorState.completion
+        this.telemetryBuffer.iterateEditorState(key, keyCode);
+
 
         // Overtyping.
         if (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) {
@@ -78,6 +80,7 @@ export class TypeGenieEventBinder {
 
     async onPartialAccept(key: string, keyCode: number) {
         this.stateManager.partialAccept()
+        this.telemetryBuffer.iterateEditorState(key, keyCode);
     }
 
     async onQueryChange(key: string, keyCode: number) {
@@ -99,12 +102,14 @@ export class TypeGenieEventBinder {
         if(currentEditorState.completion) {
             return
         }
+        // Here will prepare new completion (request timestamp + completionId);
+        that.telemetryBuffer.setRequestedCompletion();
         let completion = await that.predictionManager.fetchCompletions(currentEditorState.query, that.stateManager.events)
-
-
+        that.telemetryBuffer.setReturnedCompletion(completion);
         // Check if there is a completion already
         if(!that.stateManager.editorState.completion) {
             that.stateManager.showCompletion(currentEditorState, completion)
+            that.telemetryBuffer.setCompletionAsShown();
             return completion
         }
     }

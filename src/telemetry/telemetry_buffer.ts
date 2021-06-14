@@ -1,9 +1,15 @@
 // Interfaces
 
+interface CompletionMetadata {
+    requestTimestamp: number,
+    responseTimestamp: number,
+    shown: boolean
+}
+
 interface StateIteration  {
     timestamp : number,
     text: string,
-    completion: string,
+    completion: {metadata: CompletionMetadata, value: string},
     keystroke: string
 }
 
@@ -22,44 +28,28 @@ interface TypeGenieTelemetryBufferInterface {
 
 export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterface {
 
-    private _sessionHistory : SessionHistory;
+    public sessionHistory : SessionHistory;
     private _editor: any;
 
-    get sessionHistory(): SessionHistory {
-        return this._sessionHistory;
-    }
-
-    set sessionHistory(value: SessionHistory) {
-        this._sessionHistory = value;
-    }
 
     set sessionId(value: string) {
-        this._sessionHistory.session_id = value
+        this.sessionHistory.session_id = value
     }
 
     get sessionId() {
-        return this._sessionHistory.session_id;
+        return this.sessionHistory.session_id;
     }
 
     get currentStateIteration() {
-        return this._sessionHistory.stateHistory[this._sessionHistory.stateHistory.length - 1];
+        return this.sessionHistory.stateHistory[this.sessionHistory.stateHistory.length - 1];
     }
 
-    set currentStateIteration(value) {
-        this._sessionHistory.stateHistory[this._sessionHistory.stateHistory.length - 1] = value;
-    }
-
-
-    constructor(private editor: any) {
+    constructor(private editor: any, contentProcessor: ()=>string) {
         this.editor = editor;
         this.sessionHistory = {session_id: null, stateHistory: []};
-        console.log('Initializing TipeGenieTelemetryBuffer with state: ', this.sessionHistory);
+        this.getEditorContent = contentProcessor;
     }
 
-
-    initStateHistory(): void {
-        this.currentStateIteration = {timestamp: null, keystroke: null, text: this.getEditorContent(), completion: null};
-    }
 
 
     getEditorContent() : string {
@@ -68,34 +58,38 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
 
     resetStateHistory() {
         this.sessionHistory.stateHistory = [];
-        this.initStateHistory();
     }
 
-    prepareNextStateIteration() {
-        const newState : StateIteration = {timestamp: null, text: this.getEditorContent() , completion: null, keystroke: null};
+
+    iterateEditorState(keystroke: string, keyCode: number) {
+        let currentContent;
+        if(keystroke.length === 1) {
+            currentContent = this.getEditorContent().concat(keystroke);
+        } else {
+            currentContent = this.getEditorContent();
+        }
+        const newState : StateIteration = {timestamp: Date.now(), keystroke: keystroke, text: currentContent,
+            completion: {metadata: {requestTimestamp: null, responseTimestamp: null, shown: false}, value: null}};
         this.sessionHistory.stateHistory.push(newState);
     }
 
 
-    closeCurrentStateIteration(keystroke: any, completion: string) {
-        if(this.currentStateIteration === undefined) {
-            this.initStateHistory();
-        }
-        this.currentStateIteration.completion = completion;
-        this.currentStateIteration.timestamp = Date.now();
-        this.currentStateIteration.keystroke = keystroke;
+
+    setRequestedCompletion() {
+        this.currentStateIteration.completion.metadata.requestTimestamp = Date.now();
     }
 
+    setReturnedCompletion(completionValue: string) {
+        this.currentStateIteration.completion.value = completionValue;
+        this.currentStateIteration.completion.metadata.responseTimestamp = Date.now();
+    }
 
-    iterateEditorState(keystroke: string, completion: string) {
-        this.closeCurrentStateIteration(keystroke, completion);
-        this.prepareNextStateIteration();
-
+    setCompletionAsShown() {
+        this.currentStateIteration.completion.metadata.shown = true;
     }
 
 
     startTelemetryReport(interval: number) {
-        console.log('Calling telemetry report');
         const context = this;
         setInterval(() => {
             if(context.sessionHistory.stateHistory.length > 0 && context.sessionId!=null) {
@@ -105,7 +99,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
                 console.log('Session: ' + context.sessionId + ' has no events to report');
             }
         }, interval)
-     }
+    }
 
 }
 

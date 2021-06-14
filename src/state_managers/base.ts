@@ -19,11 +19,14 @@ export interface IEditorState {
 
 
 export default class StateManager {
+
+
     public events: Array<IEvent>
     constructor(public eventsCallback: Function) {
         this.eventsCallback = eventsCallback.bind(this)
         this.events = this.eventsCallback()
     }
+
 
     acceptFirstChar() {
         let editorStateNow = this.editorState

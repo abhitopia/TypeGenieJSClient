@@ -3,6 +3,8 @@ import FroalaStateManager, {FroalaEditorV2toV3} from "./state_managers/froala";
 import UserAPI from "./api";
 import {HTML} from "./definitions/froala";
 import {TypeGenieTelemetryBuffer} from "./telemetry/telemetry_buffer";
+// import {} from "textversionjs";
+const textversionjs = require("textversionjs");
 
 
 function froala_v2_binding() {
@@ -16,7 +18,7 @@ function froala_v2_binding() {
             this.froalaEditor.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
                 console.log('Running connect_typegenie on v2');
                 let editor = new FroalaEditorV2toV3(this.el)
-                let telemetryBuffer = new TypeGenieTelemetryBuffer(editor);
+                let telemetryBuffer = new TypeGenieTelemetryBuffer(editor, ()=> processContent(this.froalaEditor.html.get()));
                 let stateManager = new FroalaStateManager(eventsCallback, editor);
                 new TypeGenieEventBinder(stateManager, apiClient, telemetryBuffer);
             }
@@ -26,6 +28,17 @@ function froala_v2_binding() {
         window.$ = _jQuery
     }
 }
+
+const froala_content_processor = (content: string) : string => {
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(content, 'text/html');
+    const completionChild = htmlDoc.getElementsByTagName('span');
+    for(let index = 0; index < completionChild.length; index++) {
+        completionChild[index].parentNode.removeChild(completionChild[index]);
+    }
+    return htmlDoc.body.innerText;
+}
+
 
 function froala_v3_binding() {
     // Monkey patching for Froala v3
@@ -38,17 +51,16 @@ function froala_v3_binding() {
                 super(...args);
                 let that = this
                 this.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
-                    //const contentReader = ()=> {return this.html.get()}
-                    let telemetryBuffer = new TypeGenieTelemetryBuffer(that);
-                    // Monkey patch to editor state
-                    telemetryBuffer.getEditorContent = () => {return this.html.get()}
+                    let telemetryBuffer = new TypeGenieTelemetryBuffer(that, ()=> froala_content_processor(this.html.get()));
                     let stateManager = new FroalaStateManager(eventsCallback, that)
                     new TypeGenieEventBinder(stateManager, apiClient, telemetryBuffer)
                     telemetryBuffer.startTelemetryReport(5000);
                 }
+                console.log(this.connect_typegenie);
             }
         }
         window.FroalaEditor = _FroalaEditor
+        console.log(window.FroalaEditor);
     }
 }
 
