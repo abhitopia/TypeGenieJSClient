@@ -23,7 +23,6 @@ function froala_v2_binding() {
             var returnValue = _froalaEditor.apply(this, arguments);
             this.froalaEditor.el =  this
             this.froalaEditor.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
-                console.log('Running connect_typegenie on v2');
                 let editor = new FroalaEditorV2toV3(this.el)
                 let telemetryBuffer = new TypeGenieTelemetryBuffer(editor, ()=> froala_content_processor(this.froalaEditor.html.get()));
                 let stateManager = new FroalaStateManager(eventsCallback, editor);
@@ -49,16 +48,14 @@ function froala_v3_binding() {
                 super(...args);
                 let that = this
                 this.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
-                    let telemetryBuffer = new TypeGenieTelemetryBuffer(that, ()=> froala_content_processor(this.html.get()));
+                    const telemetryBuffer = new TypeGenieTelemetryBuffer(that, ()=> froala_content_processor(this.html.get()));
                     let stateManager = new FroalaStateManager(eventsCallback, that)
                     new TypeGenieEventBinder(stateManager, apiClient, telemetryBuffer)
-                    telemetryBuffer.startTelemetryReport(5000);
+                    telemetryBuffer.initTelemetryReport(5000);
                 }
-                console.log(this.connect_typegenie);
             }
         }
         window.FroalaEditor = _FroalaEditor
-        console.log(window.FroalaEditor);
     }
 }
 

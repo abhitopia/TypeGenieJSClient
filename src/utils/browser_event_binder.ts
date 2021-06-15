@@ -12,6 +12,7 @@ export const DEFAULT = -1
 
 export default class BrowserEventBinder {
     private keyUpHandlers: {[name: string]: [Function, Function]}
+    // Added third optional function to handle telemetry if intended
     private keyDownHandlers: {[name: string]: [Function, Function] } | {[name: string]: [Function, Function, Function]}
 
     constructor(public el: Element) {
@@ -61,7 +62,8 @@ export default class BrowserEventBinder {
 
     addKeyDownBind(key: number, modifierKeys: Array<ModifierKeys>, preventDefaultCallback: Function, handler: Function, telemetryHandler?: Function) {
         let keyStr = this._makeKeyStr(key, modifierKeys)
-        this.keyDownHandlers[keyStr] = telemetryHandler? [handler, preventDefaultCallback, telemetryHandler] : [handler, preventDefaultCallback];
+        // Add telemetry handler function if necessary
+        this.keyDownHandlers[keyStr] = telemetryHandler ? [handler, preventDefaultCallback, telemetryHandler] : [handler, preventDefaultCallback];
     }
 
 

@@ -62,7 +62,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
         this.sessionHistory.stateHistory = [];
     }
 
-    iterateEditorState(keystroke: string, keyCode: number, keyBoardEventStr: string) {
+    updateEditorStateHistory(keystroke: string, keyCode: number, keyBoardEventStr: string) {
         if(IGNORE_KEYCODES.includes(keyCode)) return;
         let currentContent;
         if(keystroke.length === 1) {
@@ -76,21 +76,21 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
     }
 
 
-    setRequestedCompletion() {
+    completionRequested() {
         this.currentStateIteration.completion.metadata.requestTimestamp = Date.now();
     }
 
-    setReturnedCompletion(completionValue: string) {
+    completionReturned(completionValue: string) {
         this.currentStateIteration.completion.value = completionValue;
         this.currentStateIteration.completion.metadata.responseTimestamp = Date.now();
     }
 
-    setCompletionAsShown() {
+    completionShown() {
         this.currentStateIteration.completion.metadata.shown = true;
     }
 
 
-    startTelemetryReport(interval: number) {
+    initTelemetryReport(interval: number) {
         const context = this;
         setInterval(() => {
             if(context.sessionHistory.stateHistory.length > 0 && context.sessionId!=null) {

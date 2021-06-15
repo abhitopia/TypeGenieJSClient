@@ -28,48 +28,41 @@ export class TypeGenieEventBinder {
         this._fetchAndShowCompletions = this._fetchAndShowCompletions.bind(this)
         this.fetchAndShowCompletionsThrottler = new Throttler(this._fetchAndShowCompletions, 5000)
         this.onRemoveCompletion = this.onRemoveCompletion.bind(this)
+
         //Bind telemetry event
-        this.telemetryBuffer.iterateEditorState = this.telemetryBuffer.iterateEditorState.bind(this.telemetryBuffer);
+        this.telemetryBuffer.updateEditorStateHistory = this.telemetryBuffer.updateEditorStateHistory.bind(this.telemetryBuffer);
 
         this.eventBinder = new BrowserEventBinder(this.stateManager.getScope())
 
         // Add keyboard events
-        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [], function (key: string, keyCode: number) {return true}, this.onAccept, this.telemetryBuffer.iterateEditorState)
-        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept, this.telemetryBuffer.iterateEditorState)
-        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [], function (key: string, keyCode: number) {return true}, this.onAccept, this.telemetryBuffer.iterateEditorState)
-        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept, this.telemetryBuffer.iterateEditorState)
-        this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
+        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [], () => true, this.onAccept, this.telemetryBuffer.updateEditorStateHistory)
+        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], () => true, this.onPartialAccept, this.telemetryBuffer.updateEditorStateHistory)
+        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [], () => true, this.onAccept, this.telemetryBuffer.updateEditorStateHistory)
+        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift], () => true, this.onPartialAccept, this.telemetryBuffer.updateEditorStateHistory)
+        this.eventBinder.addKeyDownBind(DEFAULT, [],  (key: string, keyCode: number) => {
             let completion = that.stateManager.editorState.completion
-
             // Overtyping.
-            if (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) {
-                return true
-            } else {
-                return false
-            }
-        }, this.onTypingKeystroke, this.telemetryBuffer.iterateEditorState);
-        this.eventBinder.addKeyUpBind(DEFAULT, [], function (){return false}, this.onQueryChange)
+            return (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) ? true : false
+        }, this.onTypingKeystroke, this.telemetryBuffer.updateEditorStateHistory);
+        this.eventBinder.addKeyUpBind(DEFAULT, [], () => false, this.onQueryChange)
 
         // Add javascript events other than keyboard events.
         this.eventBinder.addEventHandler("click", this.onRemoveCompletion)
         this.eventBinder.addEventHandler("focusin", this.onRemoveCompletion)
         this.eventBinder.addEventHandler("focusout", this.onRemoveCompletion)
-
-
     }
 
-    async onRemoveCompletion(key: string, keyCode: number) {
+    async onRemoveCompletion() {
         let editorState = this.stateManager.editorState
         this.stateManager.showCompletion(editorState, "")
     }
 
-    async onAccept(key: string, keyCode: number) {
+    async onAccept() {
         this.stateManager.accept()
     }
 
     async onTypingKeystroke(key: string, keyCode: number) {
         let completion = this.stateManager.editorState.completion
-
         // Overtyping.
         if (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) {
             this.stateManager.acceptFirstChar()
@@ -78,7 +71,7 @@ export class TypeGenieEventBinder {
         }
     }
 
-    async onPartialAccept(key: string, keyCode: number) {
+    async onPartialAccept() {
         this.stateManager.partialAccept()
     }
 
@@ -101,14 +94,16 @@ export class TypeGenieEventBinder {
         if(currentEditorState.completion) {
             return
         }
-        // Here will prepare new completion (request timestamp + completionId);
-        that.telemetryBuffer.setRequestedCompletion();
+        // Record completion request moment
+        that.telemetryBuffer.completionRequested();
         let completion = await that.predictionManager.fetchCompletions(currentEditorState.query, that.stateManager.events)
-        that.telemetryBuffer.setReturnedCompletion(completion);
+        // Record moment of completion arrival
+        that.telemetryBuffer.completionReturned(completion);
         // Check if there is a completion already
         if(!that.stateManager.editorState.completion) {
             that.stateManager.showCompletion(currentEditorState, completion)
-            that.telemetryBuffer.setCompletionAsShown();
+
+            that.telemetryBuffer.completionShown();
             return completion
         }
     }
