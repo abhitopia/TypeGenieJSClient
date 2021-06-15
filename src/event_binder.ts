@@ -28,14 +28,16 @@ export class TypeGenieEventBinder {
         this._fetchAndShowCompletions = this._fetchAndShowCompletions.bind(this)
         this.fetchAndShowCompletionsThrottler = new Throttler(this._fetchAndShowCompletions, 5000)
         this.onRemoveCompletion = this.onRemoveCompletion.bind(this)
+        //Bind telemetry event
+        this.telemetryBuffer.iterateEditorState = this.telemetryBuffer.iterateEditorState.bind(this.telemetryBuffer);
 
         this.eventBinder = new BrowserEventBinder(this.stateManager.getScope())
 
         // Add keyboard events
-        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [], function (key: string, keyCode: number) {return true}, this.onAccept)
-        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept)
-        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [], function (key: string, keyCode: number) {return true}, this.onAccept)
-        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept)
+        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [], function (key: string, keyCode: number) {return true}, this.onAccept, this.telemetryBuffer.iterateEditorState)
+        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept, this.telemetryBuffer.iterateEditorState)
+        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [], function (key: string, keyCode: number) {return true}, this.onAccept, this.telemetryBuffer.iterateEditorState)
+        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept, this.telemetryBuffer.iterateEditorState)
         this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
             let completion = that.stateManager.editorState.completion
 
@@ -45,30 +47,28 @@ export class TypeGenieEventBinder {
             } else {
                 return false
             }
-        }, this.onTypingKeystroke)
+        }, this.onTypingKeystroke, this.telemetryBuffer.iterateEditorState);
         this.eventBinder.addKeyUpBind(DEFAULT, [], function (){return false}, this.onQueryChange)
 
         // Add javascript events other than keyboard events.
         this.eventBinder.addEventHandler("click", this.onRemoveCompletion)
         this.eventBinder.addEventHandler("focusin", this.onRemoveCompletion)
         this.eventBinder.addEventHandler("focusout", this.onRemoveCompletion)
+
+
     }
 
     async onRemoveCompletion(key: string, keyCode: number) {
         let editorState = this.stateManager.editorState
         this.stateManager.showCompletion(editorState, "")
-        this.telemetryBuffer.iterateEditorState(key, keyCode);
     }
 
     async onAccept(key: string, keyCode: number) {
         this.stateManager.accept()
-        this.telemetryBuffer.iterateEditorState(key, keyCode);
     }
 
     async onTypingKeystroke(key: string, keyCode: number) {
         let completion = this.stateManager.editorState.completion
-        this.telemetryBuffer.iterateEditorState(key, keyCode);
-
 
         // Overtyping.
         if (completion && key === completion[0] || (completion[0] === "\u00A0" && keyCode === KeyEnum.SPACE)) {
@@ -80,7 +80,6 @@ export class TypeGenieEventBinder {
 
     async onPartialAccept(key: string, keyCode: number) {
         this.stateManager.partialAccept()
-        this.telemetryBuffer.iterateEditorState(key, keyCode);
     }
 
     async onQueryChange(key: string, keyCode: number) {

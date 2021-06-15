@@ -12,7 +12,7 @@ export const DEFAULT = -1
 
 export default class BrowserEventBinder {
     private keyUpHandlers: {[name: string]: [Function, Function]}
-    private keyDownHandlers: {[name: string]: [Function, Function]}
+    private keyDownHandlers: {[name: string]: [Function, Function] } | {[name: string]: [Function, Function, Function]}
 
     constructor(public el: Element) {
         this.keyUpHandlers = {}
@@ -52,15 +52,19 @@ export default class BrowserEventBinder {
         return this._makeKeyStr(keyCode, modifierKeys)
     }
 
+
+
     addKeyUpBind(key: number, modifierKeys: Array<ModifierKeys>, preventDefaultCallback: Function, handler: Function) {
         let keyStr = this._makeKeyStr(key, modifierKeys)
         this.keyUpHandlers[keyStr] = [handler, preventDefaultCallback]
     }
 
-    addKeyDownBind(key: number, modifierKeys: Array<ModifierKeys>, preventDefaultCallback: Function, handler: Function) {
+    addKeyDownBind(key: number, modifierKeys: Array<ModifierKeys>, preventDefaultCallback: Function, handler: Function, telemetryHandler?: Function) {
         let keyStr = this._makeKeyStr(key, modifierKeys)
-        this.keyDownHandlers[keyStr] = [handler, preventDefaultCallback]
+        this.keyDownHandlers[keyStr] = telemetryHandler? [handler, preventDefaultCallback, telemetryHandler] : [handler, preventDefaultCallback];
     }
+
+
 
     addEventHandler(eventName: string, handler: Function) {
         this.el.addEventListener(eventName, (e) => {handler(e)})
@@ -68,7 +72,7 @@ export default class BrowserEventBinder {
 
     keyEventHandler(e: KeyboardEvent) {
         let keyStr = this._makeKeyStrFromKeyBoardEvent(e)
-        let keyEventHandlers: {[name: string]: [Function, Function]} = {}
+        let keyEventHandlers: {[name: string]: [Function, Function]} | {[name: string]: [Function, Function, Function]} = {}
         if(e.type === "keyup") {
             keyEventHandlers = this.keyUpHandlers
         } else if (e.type === "keydown") {
@@ -84,11 +88,16 @@ export default class BrowserEventBinder {
         if(keyEventHandler) {
             let handler: Function = keyEventHandler[0]
             let preventDefaultCallback: Function = keyEventHandler[1]
+            let telemetryHandler: Function = keyEventHandler[2];
             if(preventDefaultCallback(e.key, e.keyCode)) {
                 e.preventDefault()
                 e.stopImmediatePropagation()
             }
             handler(e.key, e.keyCode)
+            // In case telemetry handler is bonded
+            if(telemetryHandler) {
+                telemetryHandler(e.key,e.keyCode,keyStr);
+            }
         }
     }
 }

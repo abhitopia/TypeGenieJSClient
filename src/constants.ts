@@ -111,6 +111,8 @@ export const IGNORE_KEYCODES = [
     KeyEnum.CAPS_LOCK
 ]
 
+
+
 export const REJECT_KEYCODES = [
     KeyEnum.LEFT_ARROW,
     KeyEnum.RIGHT_ARROW,

@@ -1,5 +1,7 @@
 // Interfaces
 
+import {IGNORE_KEYCODES} from "../constants";
+
 interface CompletionMetadata {
     requestTimestamp: number,
     responseTimestamp: number,
@@ -21,6 +23,8 @@ interface SessionHistory {
 
 interface TypeGenieTelemetryBufferInterface {
 
+    sessionHistory: SessionHistory;
+
 
 }
 
@@ -29,8 +33,6 @@ interface TypeGenieTelemetryBufferInterface {
 export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterface {
 
     public sessionHistory : SessionHistory;
-    private _editor: any;
-
 
     set sessionId(value: string) {
         this.sessionHistory.session_id = value
@@ -53,26 +55,25 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
 
 
     getEditorContent() : string {
-        throw new Error("Not implemented");
+        throw new Error("Not implemented: A valid function must be passed as constructor parameter");
     }
 
     resetStateHistory() {
         this.sessionHistory.stateHistory = [];
     }
 
-
-    iterateEditorState(keystroke: string, keyCode: number) {
+    iterateEditorState(keystroke: string, keyCode: number, keyBoardEventStr: string) {
+        if(IGNORE_KEYCODES.includes(keyCode)) return;
         let currentContent;
         if(keystroke.length === 1) {
             currentContent = this.getEditorContent().concat(keystroke);
         } else {
             currentContent = this.getEditorContent();
         }
-        const newState : StateIteration = {timestamp: Date.now(), keystroke: keystroke, text: currentContent,
+        const newState : StateIteration = {timestamp: Date.now(), keystroke: keyBoardEventStr, text: currentContent,
             completion: {metadata: {requestTimestamp: null, responseTimestamp: null, shown: false}, value: null}};
         this.sessionHistory.stateHistory.push(newState);
     }
-
 
 
     setRequestedCompletion() {
