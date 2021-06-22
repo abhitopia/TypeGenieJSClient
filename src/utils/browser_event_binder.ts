@@ -11,8 +11,8 @@ export enum ModifierKeys {
 export const DEFAULT = -1
 
 export default class BrowserEventBinder {
-    private keyUpHandlers: {[name: string]: [Function, Function]}
-    private keyDownHandlers: {[name: string]: [Function, Function]}
+    private keyUpHandlers: {[name: string]: [Function, Function, Function]}
+    private keyDownHandlers: {[name: string]: [Function, Function, Function]}
 
     constructor(public el: Element) {
         this.keyUpHandlers = {}
@@ -52,14 +52,14 @@ export default class BrowserEventBinder {
         return this._makeKeyStr(keyCode, modifierKeys)
     }
 
-    addKeyUpBind(key: number, modifierKeys: Array<ModifierKeys>, preventDefaultCallback: Function, handler: Function) {
+    addKeyUpBind(key: number, modifierKeys: Array<ModifierKeys>, preventEventPropagation: Function,handler: Function, preventHandleTrigger: Function = () => false ) {
         let keyStr = this._makeKeyStr(key, modifierKeys)
-        this.keyUpHandlers[keyStr] = [handler, preventDefaultCallback]
+        this.keyUpHandlers[keyStr] = [handler, preventEventPropagation, preventHandleTrigger]
     }
 
-    addKeyDownBind(key: number, modifierKeys: Array<ModifierKeys>, preventDefaultCallback: Function, handler: Function) {
+    addKeyDownBind(key: number, modifierKeys: Array<ModifierKeys>, preventEventPropagation: Function,handler: Function, preventHandleTrigger: Function = () => false  ) {
         let keyStr = this._makeKeyStr(key, modifierKeys)
-        this.keyDownHandlers[keyStr] = [handler, preventDefaultCallback]
+        this.keyDownHandlers[keyStr] = [handler, preventEventPropagation, preventHandleTrigger]
     }
 
     addEventHandler(eventName: string, handler: Function) {
@@ -68,7 +68,7 @@ export default class BrowserEventBinder {
 
     keyEventHandler(e: KeyboardEvent) {
         let keyStr = this._makeKeyStrFromKeyBoardEvent(e)
-        let keyEventHandlers: {[name: string]: [Function, Function]} = {}
+        let keyEventHandlers: {[name: string]: [Function, Function, Function]} = {}
         if(e.type === "keyup") {
             keyEventHandlers = this.keyUpHandlers
         } else if (e.type === "keydown") {
@@ -83,12 +83,15 @@ export default class BrowserEventBinder {
         }
         if(keyEventHandler) {
             let handler: Function = keyEventHandler[0]
-            let preventDefaultCallback: Function = keyEventHandler[1]
-            if(preventDefaultCallback(e.key, e.keyCode)) {
+            let preventEventPropagation: Function = keyEventHandler[1]
+            let preventHandleTrigger = keyEventHandler[2]
+            if(preventEventPropagation(e.key, e.keyCode)) {
                 e.preventDefault()
                 e.stopImmediatePropagation()
             }
-            handler(e.key, e.keyCode)
+            if(!preventHandleTrigger(e)) {
+                handler(e.key, e.keyCode)
+            }
         }
     }
 }

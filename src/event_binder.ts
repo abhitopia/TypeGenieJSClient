@@ -27,10 +27,12 @@ export class TypeGenieEventBinder {
         this.eventBinder = new BrowserEventBinder(this.stateManager.getScope())
 
         // Add keyboard events
+
         this.eventBinder.addKeyDownBind(KeyEnum.TAB, [], function (key: string, keyCode: number) {return true}, this.onAccept)
         this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept)
         this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [], function (key: string, keyCode: number) {return true}, this.onAccept)
         this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept)
+
         this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
             let completion = that.stateManager.editorState.completion
 
@@ -41,13 +43,24 @@ export class TypeGenieEventBinder {
                 return false
             }
         }, this.onTypingKeystroke)
-        this.eventBinder.addKeyUpBind(DEFAULT, [], function (){return false}, this.onQueryChange)
+
+        // TODO Check: First approach, addKeyUpBind for DEFAULT with ctrl as modifier, preventing further event propagation ---> This does not work as I expected (DEFAULT does not work with Modifiers?)
+        // this.eventBinder.addKeyUpBind(DEFAULT,[ModifierKeys.Control], function (key:string, keyCode: number){return true}, ()=>{console.log('Triggered keyUp with control')})
+
+        // New implementation, with preventHandleTrigger callback
+        this.eventBinder.addKeyUpBind(DEFAULT, [], function (key: string, keyCode: number){return false}, this.onQueryChange, function (e: KeyboardEvent) {
+            // Dont let callback run if modifier key is pressed on keyup
+            if(e.ctrlKey)
+                return true;
+        })
 
         // Add javascript events other than keyboard events.
         this.eventBinder.addEventHandler("click", this.onRemoveCompletion)
         this.eventBinder.addEventHandler("focusin", this.onRemoveCompletion)
         this.eventBinder.addEventHandler("focusout", this.onRemoveCompletion)
     }
+
+
 
     async onRemoveCompletion(key: string, keyCode: number) {
         let editorState = this.stateManager.editorState
