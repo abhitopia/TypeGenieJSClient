@@ -61,9 +61,14 @@ export default class FroalaStateManager extends StateManager {
         }
     }
 
+
+
     setCompletion(completion: string) {
         this.removeCompletion()
         if(completion) {
+            // Experimental feature to collapse selection to the end of last range https://developer.mozilla.org/en-US/docs/Web/API/Selection/collapseToEnd
+            // Has some browser compatibility limitations but seems to be well supported by Chrome/Firefox
+            window.getSelection().collapseToEnd();
             let { anchorNode, anchorOffset } = window.getSelection()
             this.froalaEditor.html.insert(`<span style="color: rgba(0, 0, 0, 0.5)" class="${this.completionClass}">${completion}</span>`, false)
             this.setCaret(anchorNode, anchorOffset)

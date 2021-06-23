@@ -29,9 +29,14 @@ export class TypeGenieEventBinder {
         // Add keyboard events
 
         this.eventBinder.addKeyDownBind(KeyEnum.TAB, [], function (key: string, keyCode: number) {return true}, this.onAccept)
-        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept)
-        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [], function (key: string, keyCode: number) {return true}, this.onAccept)
-        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift], function (key: string, keyCode: number) {return true}, this.onPartialAccept)
+        this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], (key: string, keyCode: number) => true, this.onPartialAccept)
+        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [],
+            (key: string, keyCode: number) => window.getSelection().anchorOffset < window.getSelection().anchorNode.textContent.length ? false : true
+
+         , this.onAccept)
+        this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift],
+            (key: string, keyCode: number) => window.getSelection().anchorOffset < window.getSelection().anchorNode.textContent.length ? false : true
+            , this.onPartialAccept)
 
         this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
             let completion = that.stateManager.editorState.completion
