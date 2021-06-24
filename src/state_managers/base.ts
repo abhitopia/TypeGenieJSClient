@@ -1,4 +1,3 @@
-import {Observable} from "rxjs";
 
 export interface IEvent {
     author_id?: string;
