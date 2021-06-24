@@ -2,6 +2,7 @@ import StateManager, {IEditorState} from "./base";
 import {v4 as uuidv4} from "uuid"
 import {FroalaEditor, HTML} from "../definitions/froala";
 import {TGJQuery} from "../definitions";
+import {fromEvent, Observable} from "rxjs";
 
 export class FroalaEditorV2toV3 {
     public html: HTML
@@ -23,6 +24,7 @@ export default class FroalaStateManager extends StateManager {
     constructor(public eventsCallback: Function, public froalaEditor: FroalaEditor) {
         super(eventsCallback)
         this.completionClass = "tg-completion"
+
     }
 
     private removeCompletion() {
@@ -77,7 +79,8 @@ export default class FroalaStateManager extends StateManager {
     }
 
     getScope(): Element {
-        console.log('Scope: ', this.froalaEditor.el);
         return this.froalaEditor.el
     }
+
+
 }

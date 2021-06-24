@@ -2,6 +2,7 @@ import {TypeGenieEventBinder} from "./event_binder";
 import FroalaStateManager, {FroalaEditorV2toV3} from "./state_managers/froala";
 import UserAPI from "./api";
 import {HTML} from "./definitions/froala";
+import {TypeGenieTelemetryBuffer} from "./telemetry/telemetry_buffer";
 
 
 function froala_v2_binding() {
@@ -16,6 +17,7 @@ function froala_v2_binding() {
                 let editor = new FroalaEditorV2toV3(this.el)
                 let stateManager = new FroalaStateManager(eventsCallback, editor)
                 new TypeGenieEventBinder(stateManager, apiClient)
+
             }
             return returnValue;
         }
@@ -37,6 +39,7 @@ function froala_v3_binding() {
                 this.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
                     let stateManager = new FroalaStateManager(eventsCallback, that)
                     new TypeGenieEventBinder(stateManager, apiClient)
+                    new TypeGenieTelemetryBuffer(that, stateManager);
                 }
             }
         }

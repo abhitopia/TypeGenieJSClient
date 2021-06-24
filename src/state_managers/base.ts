@@ -1,3 +1,5 @@
+import {Observable} from "rxjs";
+
 export interface IEvent {
     author_id?: string;
     author: "SYSTEM" | "AGENT" | "USER";
@@ -107,4 +109,5 @@ export default class StateManager {
     getScope(): Element {
         throw new Error("NotImplemented")
     }
+
 }
