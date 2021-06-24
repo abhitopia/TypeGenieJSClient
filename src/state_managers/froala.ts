@@ -77,6 +77,7 @@ export default class FroalaStateManager extends StateManager {
     }
 
     getScope(): Element {
+        console.log('Scope: ', this.froalaEditor.el);
         return this.froalaEditor.el
     }
 }
