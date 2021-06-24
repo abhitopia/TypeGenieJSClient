@@ -31,11 +31,12 @@ export class TypeGenieEventBinder {
         this.eventBinder.addKeyDownBind(KeyEnum.TAB, [], function (key: string, keyCode: number) {return true}, this.onAccept)
         this.eventBinder.addKeyDownBind(KeyEnum.TAB, [ModifierKeys.Shift], (key: string, keyCode: number) => true, this.onPartialAccept)
         this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [],
-            (key: string, keyCode: number) => window.getSelection().anchorOffset < window.getSelection().anchorNode.textContent.length ? false : true
-
+            (key: string, keyCode: number) => {
+                return that.stateManager.editorState.completion.length > 0 ? true : false
+            }
          , this.onAccept)
         this.eventBinder.addKeyDownBind(KeyEnum.RIGHT_ARROW, [ModifierKeys.Shift],
-            (key: string, keyCode: number) => window.getSelection().anchorOffset < window.getSelection().anchorNode.textContent.length ? false : true
+            (key: string, keyCode: number) => false
             , this.onPartialAccept)
 
         this.eventBinder.addKeyDownBind(DEFAULT, [], function (key: string, keyCode: number) {
