@@ -18,6 +18,7 @@ export default class PredictionManager {
         let response = await this.apiClient.createSession()
         let responseJson = await response.json()
         this.sessionId = responseJson["result"]
+        return this.sessionId;
     }
 
     async fetchCompletions(query: string, events: Array<IEvent>): Promise<string> {

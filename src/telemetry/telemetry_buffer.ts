@@ -1,6 +1,5 @@
 // Interfaces
 
-import StateManager from "../state_managers/base";
 
 interface CompletionMetadata {
     requestTimestamp: number,
@@ -9,9 +8,9 @@ interface CompletionMetadata {
 }
 
 interface StateIteration  {
-    anchorPosition : number;
+    anchorPosition : {[axis: string]: number};
     timestamp : number,
-    text: string,
+    textDiff: string,
     availableCompletion : string
 }
 
@@ -39,13 +38,73 @@ const reconstructTextFromElementCollection = (text_wrapper: HTMLCollectionOf<Ele
     return text;
 }
 
+const getAnchorVerticalOffset = (anchorNode: Node) => {
+    let i = 0;
+    const innerHtml = ((anchorNode as Element).innerHTML);
+    if(anchorNode.textContent == "" || innerHtml != undefined) {
+        while((anchorNode = anchorNode.previousSibling) != null )
+            i++;
+    } else {
+        anchorNode = anchorNode.parentNode;
+        while((anchorNode = anchorNode.previousSibling) != null )
+            i++;
+    }
+    return i;
+}
+
+const getAnchorHorizontalOffset = (anchorNode: Node, anchorOffset: number) => {
+
+    // TODO change this (not working properly yet)
+    if((anchorNode as Element).outerHTML == undefined) {
+        return anchorOffset;
+    } else {
+        console.log('AnchorNode is: ', anchorNode);
+        return 'Need to compute';
+    }
+
+}
+
+
+const computeDiff = (a: string, b: string) => {
+    if(b == undefined) b=""
+    let i = 0;
+    let j = 0;
+    let result = "";
+    while (j < b.length)
+    {
+        if (a[i] != b[j] || i == a.length)
+            result += b[j];
+        else
+            i++;
+        j++;
+    }
+    return result;
+}
+
+const getTextChanges = (a:string, b: string) => {
+    let res = computeDiff(a,b);
+    return res  != "" ? res : computeDiff(b,a);
+}
+
+const bootstrapCompletion = (htmlDoc: any, completionClass: string) : string => {
+    let completion_wrapper: Element = htmlDoc.getElementsByClassName(completionClass)[0];
+    let completionParentNode = completion_wrapper?.parentNode;
+    const completionText: string = completion_wrapper?.textContent;
+    // Remove completion html to compute correct text
+    if (completionParentNode) {
+        completionParentNode.removeChild(completion_wrapper);
+    }
+    return completionText;
+}
 
 
 export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterface {
 
     public sessionHistory : SessionHistory;
-    private stateManager: StateManager;
+    private editorScope: Element;
     private currentHtmlInnerState: string;
+    private currentAnchor: {[key: string]: any} = {};
+    private currentText: string;
     private readonly completionClass: string;
 
     set sessionId(value: string) {
@@ -57,13 +116,22 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
     }
 
 
-
-    constructor(private editor: any, stateManager:StateManager) {
+    constructor(private editor: any, editorScope: Element) {
         this.editor = editor;
         this.sessionHistory = {session_id: null, stateTransitionHistory: []};
-        this.stateManager = stateManager;
+        this.editorScope = editorScope;
         this.completionClass = "tg-completion";
-        document.addEventListener('selectionchange', (e)=> this.updateEditorStateTransitionHistory(e));
+        let mutationObserver = new MutationObserver((m) => this.updateEditorStateTransitionHistory(m));
+        mutationObserver.observe(this.editorScope, {
+            attributes: true,
+            characterData: true,
+            childList: true,
+            subtree: true,
+            attributeOldValue: true,
+            characterDataOldValue: true
+        });
+
+        //this.editorScope.addEventListener('change', (e)=> this.updateEditorStateTransitionHistory(e));
         this.initTelemetryReport(5000);
     }
 
@@ -74,25 +142,31 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
     }
 
 
-    updateEditorStateTransitionHistory(e:Event) {
-        const transitionInfo = {event: e, scope: this.stateManager.getScope(),
+    updateEditorStateTransitionHistory(m: MutationRecord[]) {
+        const transitionInfo = { scope: this.editorScope,
                 anchor: {anchorNode: document.getSelection().anchorNode, anchorOffset: document.getSelection().anchorOffset}}
-        if(this.currentHtmlInnerState !== transitionInfo.scope.innerHTML) {
+
+        //console.log('Current node: ', transitionInfo.anchor.anchorNode)
+        const anchorXOffset = transitionInfo.anchor.anchorOffset;
+        const anchorYOffset = getAnchorVerticalOffset(transitionInfo.anchor.anchorNode);
+        console.log('Attributes: ', m);
+        if((this.currentHtmlInnerState !== transitionInfo.scope.innerHTML) || (anchorXOffset != this.currentAnchor.x || (anchorYOffset != this.currentAnchor.y))) {
+            // console.log(`computed coords x: ${anchorXOffset} y:${anchorYOffset}`);
             const parser = new DOMParser();
             const htmlDoc = parser.parseFromString(transitionInfo.scope.innerHTML, 'text/html')
-            let completion_wrapper: Element = htmlDoc.getElementsByClassName(this.completionClass)[0];
-            let completionParentNode = completion_wrapper?.parentNode;
-            const completionText : string = completion_wrapper?.textContent;
-            if(completionParentNode) {
-                completionParentNode.removeChild(completion_wrapper);
-            }
-            let text_wrapper : HTMLCollectionOf<Element> = htmlDoc.getElementsByTagName('p');
+            let completionText = bootstrapCompletion(htmlDoc, this.completionClass);
+            let text_wrapper: HTMLCollectionOf<Element> = htmlDoc.getElementsByTagName('p');
             let text = reconstructTextFromElementCollection(text_wrapper);
-
-            this.sessionHistory.stateTransitionHistory.push({anchorPosition: transitionInfo.anchor.anchorOffset, timestamp: Date.now(), text: text,
-                availableCompletion: completionText})
+            // TODO try this again later
+            //let text = (transitionInfo.scope as HTMLElement).innerText;
+            this.sessionHistory.stateTransitionHistory.push({
+                anchorPosition: {x:anchorXOffset, y: anchorYOffset}, timestamp: Date.now(), textDiff: getTextChanges(this.currentText, text),
+                availableCompletion: completionText,
+            })
             this.currentHtmlInnerState = transitionInfo.scope.innerHTML;
+            this.currentText = text;
             console.log('transition history: ', this.sessionHistory.stateTransitionHistory)
+            this.currentAnchor = {x: anchorXOffset, y: anchorYOffset};
         }
     }
 
@@ -101,7 +175,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
         const context = this;
         setInterval(() => {
             if(context.sessionHistory.stateTransitionHistory.length > 0 && context.sessionId!=null) {
-                console.log('Will report: ', context.sessionHistory.stateTransitionHistory);
+                //console.log('Will report: ', context.sessionHistory.stateTransitionHistory);
                 this.resetStateHistory();
             } else {
                 console.log('Session: ' + context.sessionId + ' has no events to report');

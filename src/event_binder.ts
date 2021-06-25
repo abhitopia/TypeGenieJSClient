@@ -4,16 +4,20 @@ import BrowserEventBinder, {DEFAULT, ModifierKeys} from "./utils/browser_event_b
 import StateManager from "./state_managers/base";
 import UserAPI from "./api";
 import {IGNORE_KEYCODES, KeyEnum, REJECT_KEYCODES} from "./constants";
+import {TypeGenieTelemetryBuffer} from "./telemetry/telemetry_buffer";
 
 
 export class TypeGenieEventBinder {
     public predictionManager: PredictionManager
     public eventBinder: BrowserEventBinder
     public fetchAndShowCompletionsThrottler: Throttler
-    constructor(public stateManager: StateManager, apiClient: UserAPI) {
+    constructor(public stateManager: StateManager, apiClient: UserAPI, telemetryBuffer: TypeGenieTelemetryBuffer) {
         let that = this
         this.predictionManager = new PredictionManager(apiClient)
         this.predictionManager.createSession()
+            .then(r=> {
+                telemetryBuffer.sessionId = r;
+            })
 
         // Bind the functions.
         this.onAccept = this.onAccept.bind(this)
