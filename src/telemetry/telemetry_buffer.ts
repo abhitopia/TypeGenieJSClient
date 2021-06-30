@@ -85,6 +85,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
     private prevText: string = "";
     private readonly completionClass: string;
     private currentSelection : any;
+    private currentCompletion: string;
 
     set sessionId(value: string) {
         this.sessionHistory.session_id = value
@@ -102,7 +103,15 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
         this.sessionHistory = {session_id: null, stateTransitionHistory: []};
         this.editorScope = editorScope;
         this.completionClass = "tg-completion";
-
+        let mutationObserver = new MutationObserver(() => this.updateEditorStateTransitionHistory(null));
+        mutationObserver.observe(this.editorScope, {
+            attributes: true,
+            childList: true,
+            characterData: true,
+            subtree: true,
+            characterDataOldValue: true,
+            attributeOldValue: true
+        });
         this.editorScope.addEventListener('keyup', (e) => this.updateEditorStateTransitionHistory(e as KeyboardEvent))
         this.editorScope.addEventListener('mouseup', ()=> this.setCurrentSelection())
         this.editorScope.addEventListener('keydown', ()=> this.setCurrentSelection())
@@ -122,7 +131,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
             this.sessionHistory.stateTransitionHistory.push({
                 anchorPosition: caret, timestamp: Date.now(), textDiff: textDiff,
                 availableCompletion: completionText,
-                keyStroke: {key:event.key, shiftKey:event.shiftKey, altKey:event.altKey, ctrlKey: event.ctrlKey}
+                keyStroke: {key:event?.key, shiftKey:event?.shiftKey, altKey:event?.altKey, ctrlKey: event?.ctrlKey}
             })
             this.currentHtmlInnerState = this.editorScope.innerHTML;
             this.prevText = text;
@@ -148,6 +157,11 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
             const anchorOffset = document.getSelection().anchorOffset + computeRemainingOffset(document.getSelection().anchorNode);
             this.currentSelection = {anchorOffset: anchorOffset, focusOffset: focusOffset!=anchorOffset?focusOffset:null}
     }
+
+    // setCurrentCompletion() {
+    //     this.currentCompletion = digestEditorScopeHtml(this.editorScope.innerHTML, this.completionClass).completionText;
+    //     this.updateEditorStateTransitionHistory(null);
+    // }
 
     initTelemetryReport(interval: number) {
         const context = this;
