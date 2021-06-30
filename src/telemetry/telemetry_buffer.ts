@@ -63,6 +63,17 @@ const digestEditorScopeHtml = (scopeHtml: string, completionClass: string) => {
     return {text, completionText};
 }
 
+const computeRemainingOffset = (node:Node) => {
+    let offset = 0;
+    const parent = node.parentNode;
+    let newNode : Node = parent;
+    while((newNode = newNode.previousSibling) != null) {
+        offset += newNode.textContent.length + 1;
+    }
+    return offset;
+
+}
+
 
 
 
@@ -71,7 +82,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
     public sessionHistory : SessionHistory;
     private readonly editorScope: Element;
     private currentHtmlInnerState: string;
-    private currentText: string = "";
+    private prevText: string = "";
     private readonly completionClass: string;
     private currentSelection : any;
 
@@ -91,6 +102,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
         this.sessionHistory = {session_id: null, stateTransitionHistory: []};
         this.editorScope = editorScope;
         this.completionClass = "tg-completion";
+
         this.editorScope.addEventListener('keyup', (e) => this.updateEditorStateTransitionHistory(e as KeyboardEvent))
         this.editorScope.addEventListener('mouseup', ()=> this.setCurrentSelection())
         this.editorScope.addEventListener('keydown', ()=> this.setCurrentSelection())
@@ -104,55 +116,37 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
 
 
     updateEditorStateTransitionHistory(event: KeyboardEvent) {
-        console.log('On update state transition history selection is: ', this.currentSelection);
         if((this.currentHtmlInnerState !== this.editorScope.innerHTML)) {
             const {text, completionText} = digestEditorScopeHtml(this.editorScope.innerHTML, this.completionClass);
-            let {textDiff, caret} = this.processTextEditing(text, event.key);
+            let {textDiff, caret} = this.processTextEditing(text);
             this.sessionHistory.stateTransitionHistory.push({
                 anchorPosition: caret, timestamp: Date.now(), textDiff: textDiff,
                 availableCompletion: completionText,
                 keyStroke: {key:event.key, shiftKey:event.shiftKey, altKey:event.altKey, ctrlKey: event.ctrlKey}
             })
             this.currentHtmlInnerState = this.editorScope.innerHTML;
-            this.currentText = text;
+            this.prevText = text;
         }
     }
 
 
-    processTextEditing = (current: string, keyStroke: string) => {
+    processTextEditing = (current: string) => {
         current = current ? current : "";
-        const computedDiff = diffChars(this.currentText , current);
+        const computedDiff = diffChars(this.prevText , current);
         const result : any = {textDiff: null, caret: {anchorOffset: null, focusOffset: null}};
+        if(this.prevText === "") Object.assign(result, {textDiff: {value: current, added: true, removed: undefined, count : 1}, caret: this.currentSelection})
         if(computedDiff.length >= 2) {
-            const currentText = computedDiff[0].value;
-            const removedByBackspace = computedDiff[1].removed && keyStroke === 'Backspace';
-            const caretPosition = removedByBackspace? currentText.length + computedDiff[1].count : currentText.length;
-            // const highlightedSelection = this.computeMultilineCaretOffset(computedDiff);
-            // Try to work around this special case
-            // Object.assign(result,{textDiff: computedDiff[1],
-            //     caret: highlightedSelection ? highlightedSelection: {anchorOffset: caretPosition}})
             Object.assign(result,{textDiff: computedDiff[1],
-                caret: this.currentSelection ? this.currentSelection: {anchorOffset: caretPosition}})
+                caret: this.currentSelection})
         }
         return result;
     }
 
 
     setCurrentSelection() {
-        if(document.getSelection().anchorNode != document.getSelection().focusNode) {
-            console.log('Computing selection for different nodes');
-            console.log('Anchor node: ', document.getSelection().anchorNode);
-            console.log('Anchor offset: ', document.getSelection().anchorOffset);
-            console.log('Focus node: ', document.getSelection().focusNode);
-            console.log('Focus offset: ', document.getSelection().focusOffset);
-
-        } else {
-            if(document.getSelection().anchorOffset != document.getSelection().focusOffset) {
-                this.currentSelection = {anchorOffset: document.getSelection().anchorOffset, focusOffset: document.getSelection().focusOffset}
-            } else {
-                this.currentSelection = null;
-            }
-        }
+            const focusOffset = document.getSelection().focusOffset + computeRemainingOffset(document.getSelection().focusNode);
+            const anchorOffset = document.getSelection().anchorOffset + computeRemainingOffset(document.getSelection().anchorNode);
+            this.currentSelection = {anchorOffset: anchorOffset, focusOffset: focusOffset!=anchorOffset?focusOffset:null}
     }
 
     initTelemetryReport(interval: number) {
