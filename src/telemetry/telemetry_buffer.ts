@@ -7,7 +7,7 @@ interface StateIteration  {
     timestamp : number,
     textDiff: any,
     availableCompletion : string,
-    keyStroke: {key: string, altKey: boolean, ctrlKey: boolean, shiftKey: boolean}
+    // keyStroke: {key: string, altKey: boolean, ctrlKey: boolean, shiftKey: boolean
 }
 
 interface SessionHistory {
@@ -104,17 +104,15 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
         this.editorScope = editorScope;
         this.completionClass = "tg-completion";
         let mutationObserver = new MutationObserver(() => this.updateEditorStateTransitionHistory(null));
-        mutationObserver.observe(this.editorScope, {
-            attributes: true,
-            childList: true,
-            characterData: true,
-            subtree: true,
-            characterDataOldValue: true,
-            attributeOldValue: true
-        });
-        this.editorScope.addEventListener('keyup', (e) => this.updateEditorStateTransitionHistory(e as KeyboardEvent))
+        mutationObserver.observe(this.editorScope, {attributes: true, childList: true, characterData: true, subtree: true, characterDataOldValue: true, attributeOldValue: true});
+        // this.editorScope.addEventListener('keyup', (e) => {
+        //     this.updateEditorStateTransitionHistory(e as KeyboardEvent)
+        //     mutationObserver.observe(this.editorScope, {attributes: true, childList: true, characterData: true, subtree: true, characterDataOldValue: true, attributeOldValue: true});
+        // })
         this.editorScope.addEventListener('mouseup', ()=> this.setCurrentSelection())
-        this.editorScope.addEventListener('keydown', ()=> this.setCurrentSelection())
+        this.editorScope.addEventListener('keydown', ()=> {
+            this.setCurrentSelection()
+        });
         this.initTelemetryReport(5000);
     }
 
@@ -128,11 +126,12 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
         if((this.currentHtmlInnerState !== this.editorScope.innerHTML)) {
             const {text, completionText} = digestEditorScopeHtml(this.editorScope.innerHTML, this.completionClass);
             let {textDiff, caret} = this.processTextEditing(text);
-            this.sessionHistory.stateTransitionHistory.push({
-                anchorPosition: caret, timestamp: Date.now(), textDiff: textDiff,
-                availableCompletion: completionText,
-                keyStroke: {key:event?.key, shiftKey:event?.shiftKey, altKey:event?.altKey, ctrlKey: event?.ctrlKey}
-            })
+            if(textDiff || completionText) {
+                this.sessionHistory.stateTransitionHistory.push({
+                    anchorPosition: caret, timestamp: Date.now(), textDiff: textDiff,
+                    availableCompletion: completionText})
+            }
+
             this.currentHtmlInnerState = this.editorScope.innerHTML;
             this.prevText = text;
         }
@@ -141,6 +140,7 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
 
     processTextEditing = (current: string) => {
         current = current ? current : "";
+        console.log('Computing diff for: ', current , ' and ', this.prevText);
         const computedDiff = diffChars(this.prevText , current);
         const result : any = {textDiff: null, caret: {anchorOffset: null, focusOffset: null}};
         if(this.prevText === "") Object.assign(result, {textDiff: {value: current, added: true, removed: undefined, count : 1}, caret: this.currentSelection})
@@ -157,11 +157,6 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
             const anchorOffset = document.getSelection().anchorOffset + computeRemainingOffset(document.getSelection().anchorNode);
             this.currentSelection = {anchorOffset: anchorOffset, focusOffset: focusOffset!=anchorOffset?focusOffset:null}
     }
-
-    // setCurrentCompletion() {
-    //     this.currentCompletion = digestEditorScopeHtml(this.editorScope.innerHTML, this.completionClass).completionText;
-    //     this.updateEditorStateTransitionHistory(null);
-    // }
 
     initTelemetryReport(interval: number) {
         const context = this;
