@@ -103,12 +103,9 @@ export class TypeGenieTelemetryBuffer implements TypeGenieTelemetryBufferInterfa
         this.sessionHistory = {session_id: null, stateTransitionHistory: []};
         this.editorScope = editorScope;
         this.completionClass = "tg-completion";
-        let mutationObserver = new MutationObserver(() => this.updateEditorStateTransitionHistory(null));
-        mutationObserver.observe(this.editorScope, {attributes: true, childList: true, characterData: true, subtree: true, characterDataOldValue: true, attributeOldValue: true});
-        // this.editorScope.addEventListener('keyup', (e) => {
-        //     this.updateEditorStateTransitionHistory(e as KeyboardEvent)
-        //     mutationObserver.observe(this.editorScope, {attributes: true, childList: true, characterData: true, subtree: true, characterDataOldValue: true, attributeOldValue: true});
-        // })
+        // let mutationObserver = new MutationObserver(() => this.updateEditorStateTransitionHistory(null));
+        // mutationObserver.observe(this.editorScope, {attributes: true, childList: true, characterData: true, subtree: true, characterDataOldValue: true, attributeOldValue: true});
+
         this.editorScope.addEventListener('mouseup', ()=> this.setCurrentSelection())
         this.editorScope.addEventListener('keydown', ()=> {
             this.setCurrentSelection()

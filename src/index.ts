@@ -5,27 +5,27 @@ import {HTML} from "./definitions/froala";
 import {TypeGenieTelemetryBuffer} from "./telemetry/telemetry_buffer";
 
 
-function froala_v2_binding() {
-    // Monkey patching for Froala v2
-    let _jQuery = window.jQuery || window.$
-    if(_jQuery) {
-        var _froalaEditor = _jQuery.prototype.froalaEditor;
-        _jQuery.prototype.froalaEditor = function () {
-            var returnValue = _froalaEditor.apply(this, arguments);
-            this.froalaEditor.el =  this
-            this.froalaEditor.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
-                let editor = new FroalaEditorV2toV3(this.el)
-                let stateManager = new FroalaStateManager(eventsCallback, editor)
-                let telemetryBuffer = new TypeGenieTelemetryBuffer(editor, stateManager.getScope());
-                new TypeGenieEventBinder(stateManager, apiClient, telemetryBuffer);
-
-            }
-            return returnValue;
-        }
-        window.jQuery = _jQuery
-        window.$ = _jQuery
-    }
-}
+// function froala_v2_binding() {
+//     // Monkey patching for Froala v2
+//     let _jQuery = window.jQuery || window.$
+//     if(_jQuery) {
+//         var _froalaEditor = _jQuery.prototype.froalaEditor;
+//         _jQuery.prototype.froalaEditor = function () {
+//             var returnValue = _froalaEditor.apply(this, arguments);
+//             this.froalaEditor.el =  this
+//             this.froalaEditor.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
+//                 let editor = new FroalaEditorV2toV3(this.el)
+//                 let stateManager = new FroalaStateManager(eventsCallback, editor)
+//                 // let telemetryBuffer = new TypeGenieTelemetryBuffer(editor, stateManager.getScope());
+//                 new TypeGenieEventBinder(stateManager, apiClient);
+//
+//             }
+//             return returnValue;
+//         }
+//         window.jQuery = _jQuery
+//         window.$ = _jQuery
+//     }
+// }
 
 function froala_v3_binding() {
     // Monkey patching for Froala v3
@@ -37,17 +37,25 @@ function froala_v3_binding() {
             constructor(...args: any[]) {
                 super(...args);
                 let that = this
+                console.log('Running binding');
                 this.connect_typegenie = function (apiClient: UserAPI, eventsCallback: Function) {
-                    let stateManager = new FroalaStateManager(eventsCallback, that)
-                    let telemetryBuffer = new TypeGenieTelemetryBuffer(that, stateManager.getScope());
-                    new TypeGenieEventBinder(stateManager, apiClient, telemetryBuffer)
+                    try{
+                        let stateManager = new FroalaStateManager(eventsCallback, that)
+                        let telemetryBuffer = new TypeGenieTelemetryBuffer(that, stateManager.getScope());
+                        new TypeGenieEventBinder(stateManager, apiClient, telemetryBuffer);
+                    } catch (e) {
+                        throw new Error(e);
+                    }
+
                 }
+                console.log('Biinidng successfull!');
+                console.log('Typegenie connect is: ', this.connect_typegenie);
             }
         }
         window.FroalaEditor = _FroalaEditor
     }
 }
-froala_v2_binding()
+//froala_v2_binding()
 froala_v3_binding()
 
 module.exports = {
