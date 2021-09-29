@@ -25,10 +25,13 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:latest -f Tests.Dockerfile .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$COMMIT_HASH
+      - echo running unit tests...
   post_build:
     commands:
-      - echo Will start running tests...
-      - docker run -it $REPOSITORY_URI:$IMAGE_TAG mocha tests.js
-      - echo Tests finished successfully
+      - |
+      # In case build goes well, leave production deployed and push image with production tag
+      if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
+          echo Tests successfully passed
+      else
+          echo Unit tests did not pass...
+      fi

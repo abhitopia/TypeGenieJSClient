@@ -39,16 +39,17 @@ phases:
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$COMMIT_HASH
-
+      - echo running unit tests...
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Will start running tests...
-      - docker run -it $REPOSITORY_URI:$IMAGE_TAG python tests.py
-      - echo Tests successfully passed, will deploy to pip
-      - echo Twine username is $TWINE_USERNAME
-      - docker run -it $REPOSITORY_URI:$IMAGE_TAG python setup.py sdist bdist_wheel
-      - docker run -it $REPOSITORY_URI:$IMAGE_TAG twine upload dist/* --username $TWINE_USERNAME --password $TWINE_PASSWORD
+      - |
+      # In case build goes well, leave production deployed and push image with production tag
+      if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
+        echo Tests successfully passed, will mark as release
+      else
+        echo Unit tests did not pass... not suitable for release
+      fi
 
 
 # The below needs to be completed by Omkar

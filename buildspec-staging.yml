@@ -29,20 +29,20 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:latest-f Production.Dockerfile .
+      - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$COMMIT_HASH
-
+      - echo running unit tests...
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Will start running tests...
-      - docker run -it $REPOSITORY_URI:$IMAGE_TAG python tests.py
-      - echo Tests successfully passed, will bump version
-      - echo bump version
-      - echo Should I push to repository right now?????
-      - echo $(git status)
-
+      - |
+      # In case build goes well, leave production deployed and push image with production tag
+      if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
+        echo Tests successfully passed, will mark as staging release
+      else
+        echo Unit tests did not pass... not suitable for staging release
+      fi
 
 # The below needs to be completed by Omkar
 #      - "helm upgrade -i <RELEASE_NAME> <PATH_TO_HELM_FILES> -f ./path/to/kubernetes/values/values.$ENV.yaml --set image.tag=$CODEBUILD_RESOLVED_SOURCE_VERSION"
