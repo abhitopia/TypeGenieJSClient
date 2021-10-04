@@ -49,7 +49,7 @@ phases:
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git fetch
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git checkout main
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git tag staging-release-$IMAGE_TAG
-          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git push
+          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git push origin main
           echo Commit successfully tagged
         else
           echo Unit tests did not pass... not suitable for staging release

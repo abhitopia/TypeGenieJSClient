@@ -47,8 +47,9 @@ phases:
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git fetch
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git checkout cicd_integration
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git tag test-tag-$IMAGE_TAG
+          echo Will now push tagged commit
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git push origin cicd_integration
-          echo Commit successfully tagged
+          echo Commit successfully pushed
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
