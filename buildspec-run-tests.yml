@@ -37,6 +37,7 @@ phases:
       - echo Running tests from test container
   post_build:
     commands:
+      - echo codebuild succeeding is $CODEBUILD_BUILD_SUCCEEDING
       - echo Build completed on `date`
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
