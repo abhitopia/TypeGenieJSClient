@@ -1,5 +1,11 @@
 version: 0.2
 
+env:
+  git-credential-helper: yes
+  secrets-manager:
+    OAUTH_TOKEN: " git_oauth_token:oauth_token"
+
+
 phases:
   install:
     commands:  # Install AWS cli, kubectl (needed for Helm) and Helm
@@ -19,6 +25,7 @@ phases:
       - IMAGE_REPO_NAME=typegenie-api-client
       - ENV=staging
       - aws --version
+      - GITHUB_USER=renatomrochatg
       - ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
