@@ -22,6 +22,8 @@ phases:
       - AWS_DEFAULT_REGION=eu-west-1
       - IMAGE_REPO_NAME=typegenie-api-client
       - aws --version
+      - git config --global user.email "renato@typegenie.net"
+      - git config --global user.name "renatomrochatg"
       - GITHUB_USER=renatomrochatg
       - ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo Logging in to Amazon ECR...
@@ -34,7 +36,6 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t deployment-container:latest -f Production.Dockerfile .
       - docker build -t tester-container:latest -f Tests.Dockerfile .
       - echo Running tests from test container
   post_build:
@@ -43,7 +44,11 @@ phases:
       - echo Build completed on `date`
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
-          echo Tests successfully passed
+          git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@github.com/abhitopia/TypeGenieJSClient.git
+          git fetch
+          git checkout cicd_integration
+          git tag -a test-release-$IMAGE_TAG -m "Automatic cicd tag"
+          git push --tags origin cicd_integration
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
