@@ -29,20 +29,19 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$COMMIT_HASH
-      - echo running unit tests...
+      - docker build -t deployment-container:latest -f Production.Dockerfile .
+      - docker build -t tester-container:latest -f Tests.Dockerfile .
+      - echo Running tests from test container
   post_build:
     commands:
       - echo Build completed on `date`
       - |
       # In case build goes well, leave production deployed and push image with production tag
       if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
-        echo Tests successfully passed, will mark as staging release
+        docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@github.com/abhitopia/TypeGenieJSClient.git
+        docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git tag staging-release-$IMAGE_TAG
+        docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git push
+        echo Commit successfully tagged
       else
         echo Unit tests did not pass... not suitable for staging release
       fi
-
-# The below needs to be completed by Omkar
-#      - "helm upgrade -i <RELEASE_NAME> <PATH_TO_HELM_FILES> -f ./path/to/kubernetes/values/values.$ENV.yaml --set image.tag=$CODEBUILD_RESOLVED_SOURCE_VERSION"
