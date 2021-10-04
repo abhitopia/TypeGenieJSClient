@@ -43,7 +43,6 @@ phases:
     commands:
       - echo Build completed on `date`
       - |
-      # In case build goes well, leave production deployed and push image with production tag
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@github.com/abhitopia/TypeGenieJSClient.git
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git tag production-release-$IMAGE_TAG
