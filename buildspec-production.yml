@@ -47,6 +47,8 @@ phases:
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@github.com/abhitopia/TypeGenieJSClient.git
+          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git fetch
+          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git checkout production
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git tag production-release-$IMAGE_TAG
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git push
           echo Commit successfully tagged
