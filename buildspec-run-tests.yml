@@ -46,9 +46,9 @@ phases:
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@github.com/abhitopia/TypeGenieJSClient.git
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git fetch
           docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git checkout cicd_integration
-          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git tag test-tag-$IMAGE_TAG
+          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git tag -a test-tag-$IMAGE_TAG -m "Automatic cicd tag"
           echo Will now push tagged commit
-          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git push origin cicd_integration
+          docker run -v $(pwd):/root/TypeGenieJSClient deployment-container:latest git push --tags origin cicd_integration
           echo Commit successfully pushed
         else
           echo Unit tests did not pass... not suitable for staging release
