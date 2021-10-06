@@ -39,6 +39,7 @@ phases:
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
   build:
     commands:
+      - DATE=$(date '+%Y-%m-%d-%H-%M')
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t tester-container:latest -f Tests.Dockerfile .
@@ -61,7 +62,7 @@ phases:
           tar -czvf dist.tgz dist/*
           echo Build, version patch update and tar complete... Will now create release tag
           UPDATED_VERSION=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
-          git tag -a $ENV-release-$UPDATED_VERSION -m "Automatic cicd tag"
+          git tag -a $ENV-$DATE-$UPDATED_VERSION -m "Automatic cicd tag"
           git push --tags origin production
           echo tags pushed... Will now create release
           gh release create test-release --title "CICD production release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz

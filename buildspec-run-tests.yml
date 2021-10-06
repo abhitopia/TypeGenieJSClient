@@ -39,6 +39,7 @@ phases:
       - echo Installing source NPM dependencies...
   build:
     commands:
+      - DATE=$(date '+%Y-%m-%d-%H-%M')
       - echo Build started on `date`
       - echo Building the Docker image...
 #      - docker build -t tester-container:latest -f Tests.Dockerfile .
@@ -60,6 +61,7 @@ phases:
           npm install
           npm run build
           tar -czvf dist.tgz dist/*
+          ls
           echo Build, version patch update and tar complete... Will now create release tag
           UPDATED_VERSION=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
           git tag -a $ENV-release-$UPDATED_VERSION -m "Automatic cicd tag"
