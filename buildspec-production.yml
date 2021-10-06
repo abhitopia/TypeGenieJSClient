@@ -49,12 +49,22 @@ phases:
       - echo Build completed on `date`
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@github.com/abhitopia/TypeGenieJSClient.git
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git fetch
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git checkout $ENV
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git tag -a $ENV-release-$IMAGE_TAG -m "Automatic cicd tag"
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git push --tags origin $ENV
-          echo Commit successfully tagged
+          git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@$REPO_URL
+          git fetch
+          git checkout production
+          echo Will increment version
+          npm version minor
+          git add package.json
+          git commit -m "Codebuild bumpversion"
+          git push origin production
+          npm run build
+          tar -czvf dist.tgz dist/*
+          echo Build, version patch update and tar complete... Will now create release tag
+          UPDATED_VERSION=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
+          git tag -a $ENV-release-$UPDATED_VERSION -m "Automatic cicd tag"
+          git push --tags origin production
+          echo tags pushed... Will now create release
+          gh release create test-release --title "CICD production release $UPDATED_VERSION" --note "Release automatically created through cicd pipeline" dist.tgz
         else
-          echo Unit tests did not pass... not suitable for staging release
+          echo Unit tests did not pass... not suitable for production release
         fi
