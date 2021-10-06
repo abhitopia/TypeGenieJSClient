@@ -65,7 +65,7 @@ phases:
           git tag -a $ENV-release-$UPDATED_VERSION -m "Automatic cicd tag"
           git push --tags origin cicd_integration
           echo tags pushed... Will now create release
-          gh release create test-release --title "CICD test release $UPDATED_VERSION" --note "Release automatically created through cicd pipeline" dist.tgz
+          gh release create test-release --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
