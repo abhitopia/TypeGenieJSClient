@@ -47,12 +47,12 @@ phases:
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
           gh --version
-#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest gh --version
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
 
 
+#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest gh --version
 
 #          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@$REPO_URL
 #          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git fetch
