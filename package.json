@@ -1,6 +1,6 @@
 {
   "name": "typegeniejs",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "description": "TypeGenie Javascript library.",
   "main": "dist/typegenie.js",
   "types": "src/definitions/index.d.ts",
