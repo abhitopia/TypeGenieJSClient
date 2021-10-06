@@ -52,14 +52,13 @@ phases:
           git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@$REPO_URL
           git fetch
           git checkout cicd_integration
-          git tag -a $ENV-release-$IMAGE_TAG -m "Automatic cicd tag"
+          git tag -a test-release -m "Automatic cicd tag"
           git push --tags origin cicd_integration
           echo tags pushed... Will now create release
-          gh release create $ENV-release-$IMAGE_TAG --title "CICD release $ENV-release-$IMAGE_TAG" --note "A release created through cicd pipeline"
+          gh release create test-release --title "CICD test release" --note "A release created through cicd pipeline for testing purposes" dist.tgz
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
 
 
-#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest gh --version
 
