@@ -28,6 +28,8 @@ phases:
       - REPO_URL=github.com/abhitopia/$REPO_NAME.git
       - ENV=production
       - aws --version
+      - git config --global user.email "renato@typegenie.net"
+      - git config --global user.name "renatomrochatg"
       - GITHUB_USER=renatomrochatg
       - ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo Logging in to Amazon ECR...
@@ -39,7 +41,6 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t deployment-container:latest -f Production.Dockerfile .
       - docker build -t tester-container:latest -f Tests.Dockerfile .
       - echo Running tests from test container
 
