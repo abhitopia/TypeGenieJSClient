@@ -46,16 +46,22 @@ phases:
       - echo Build completed on `date`
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
-          npm run build
-          tar -czvf dist.tgz dist/*
-          echo Build and tar complete... Will now create release tag
           git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@$REPO_URL
           git fetch
           git checkout cicd_integration
-          git tag -a test-release -m "Automatic cicd tag"
+          echo Will increment version
+          npm version patch
+          git add package.json
+          git commit -m "Codebuild bumpversion"
+          git push origin cicd_integration
+          npm run build
+          tar -czvf dist.tgz dist/*
+          echo Build, version patch update and tar complete... Will now create release tag
+          UPDATED_VERSION=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
+          git tag -a $ENV-release-$UPDATED_VERSION -m "Automatic cicd tag"
           git push --tags origin cicd_integration
           echo tags pushed... Will now create release
-          gh release create test-release --title "CICD test release" --note "A release created through cicd pipeline for testing purposes" dist.tgz
+          gh release create test-release --title "CICD test release $UPDATED_VERSION" --note "Release automatically created through cicd pipeline" dist.tgz
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
