@@ -57,6 +57,7 @@ phases:
           git add package.json
           git commit -m "Codebuild bumpversion"
           git push origin cicd_integration
+          npm install
           npm run build
           tar -czvf dist.tgz dist/*
           echo Build, version patch update and tar complete... Will now create release tag
