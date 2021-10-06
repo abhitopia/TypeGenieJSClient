@@ -38,7 +38,7 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t deployment-container:latest -f Production.Dockerfile .
-      - docker build -t tester-container:latest -f Tests.Dockerfile .
+#      - docker build -t tester-container:latest -f Tests.Dockerfile .
       - echo Running tests from test container
   post_build:
     commands:
