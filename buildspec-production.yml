@@ -24,8 +24,8 @@ phases:
       - AWS_ACCOUNT_ID=705303224111
       - AWS_DEFAULT_REGION=eu-west-1
       - IMAGE_REPO_NAME=typegenie-api-client
-      - REPO_NAME = TypeGenieJSClient
-      - REPO_URL = github.com/abhitopia/$REPO_NAME.git
+      - REPO_NAME=TypeGenieJSClient
+      - REPO_URL=github.com/abhitopia/$REPO_NAME.git
       - ENV=production
       - aws --version
       - GITHUB_USER=renatomrochatg
