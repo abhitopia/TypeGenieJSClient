@@ -43,11 +43,11 @@ phases:
       - echo Build completed on `date`
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@$REPO_URL
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git fetch
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git checkout cicd_integration
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git tag -a $ENV-release-$IMAGE_TAG -m "Automatic cicd tag"
-          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git push --tags origin cicd_integration
+#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@$REPO_URL
+#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git fetch
+#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git checkout cicd_integration
+#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git tag -a $ENV-release-$IMAGE_TAG -m "Automatic cicd tag"
+#          docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest git push --tags origin cicd_integration
           gh --version
           docker run -v $(pwd):/root/$REPO_NAME deployment-container:latest gh --version
         else
