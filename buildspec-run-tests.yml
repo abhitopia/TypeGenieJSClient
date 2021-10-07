@@ -62,7 +62,7 @@ phases:
           echo tags pushed... Will now create release
           touch token.txt
           echo $OAUTH_TOKEN >> token.txt
-          gh auth login --with-token $OAUTH_TOKEN
+          gh auth login --with-token < token.txt
           gh release create $UPDATED_VERSION --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
         else
           echo Unit tests did not pass... not suitable for staging release
