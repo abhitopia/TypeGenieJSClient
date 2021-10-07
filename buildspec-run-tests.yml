@@ -70,4 +70,3 @@ phases:
 
 
 
-#          gh release create $UPDATED_VERSION --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz

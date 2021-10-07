@@ -46,9 +46,9 @@ phases:
       - echo Building the Docker image...
       - docker build -t tester-container:latest -f Tests.Dockerfile .
       - echo Running tests from test container
-
   post_build:
     commands:
+      - echo codebuild succeeding is $CODEBUILD_BUILD_SUCCEEDING
       - echo Build completed on `date`
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
@@ -57,17 +57,15 @@ phases:
           git checkout main
           echo Will increment version
           npm version patch
-          git add package.json
-          git commit -m "Codebuild bumpversion"
           git push origin main
-          npm run build
-          tar -czvf dist.tgz dist/*
           echo Build, version patch update and tar complete... Will now create release tag
-          UPDATED_VERSION=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
-          git tag -a $ENV-$DATE-$UPDATED_VERSION -m "Automatic cicd tag"
-          git push --tags origin main
+          UPDATED_VERSION=v$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
+          git push origin refs/tags/$UPDATED_VERSION
           echo tags pushed... Will now create release
-          gh release create test-release --title "CICD staging release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
+          touch token.txt
+          echo $OAUTH_TOKEN >> token.txt
+          gh auth login --with-token < token.txt
+          gh release create $UPDATED_VERSION --title "CICD staging release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline"
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
