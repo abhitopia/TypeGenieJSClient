@@ -34,7 +34,7 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
       - REPOSITORY_URI=$ECR_URI/$IMAGE_REPO_NAME
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+#      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
       - echo Installing source NPM dependencies...
   build:
@@ -64,7 +64,7 @@ phases:
           ls
           echo Build, version patch update and tar complete... Will now create release tag
           UPDATED_VERSION=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
-          git tag -a $ENV-release-$UPDATED_VERSION -m "Automatic cicd tag"
+          git tag -a $ENV-$DATE-$UPDATED_VERSION -m "Automatic cicd tag"
           git push --tags origin cicd_integration
           echo tags pushed... Will now create release
           gh release create test-release --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
