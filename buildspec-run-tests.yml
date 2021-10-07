@@ -55,21 +55,15 @@ phases:
           git checkout cicd_integration
           echo Will increment version
           npm version patch
-          git add package.json
-          git commit -m "Codebuild bumpversion"
           git push origin cicd_integration
-          npm install
-          npm run build
-          tar -czvf dist.tgz dist/*
-          ls
           echo Build, version patch update and tar complete... Will now create release tag
-          UPDATED_VERSION=$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
-          echo updated version is $UPDATED_VERSION
+          UPDATED_VERSION=v$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
+          git push origin refs/tags/$UPDATED_VERSION
           echo tags pushed... Will now create release
-          gh release create test-release --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
 
 
 
+#          gh release create test-release --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
