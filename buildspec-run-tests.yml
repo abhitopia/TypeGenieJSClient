@@ -60,10 +60,12 @@ phases:
           UPDATED_VERSION=v$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
           git push origin refs/tags/$UPDATED_VERSION
           echo tags pushed... Will now create release
+          gh auth login --with-token $OAUTH_TOKEN
+          gh release create test-release --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
+
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
 
 
 
-#          gh release create test-release --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline" dist.tgz
