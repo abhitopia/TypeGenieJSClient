@@ -14,8 +14,6 @@ phases:
       - echo No installs required
   pre_build:
     commands:
-      - AWS_ACCOUNT_ID=705303224111
-      - AWS_DEFAULT_REGION=eu-west-1
       - IMAGE_REPO_NAME=typegenie-api-client
       - REPO_NAME=TypeGenieJSClient
       - REPO_URL=github.com/abhitopia/$REPO_NAME.git
