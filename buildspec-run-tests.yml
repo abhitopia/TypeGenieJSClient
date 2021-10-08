@@ -32,6 +32,7 @@ phases:
       - echo Building the Docker image...
 #      - docker build -t tester-container:latest -f Tests.Dockerfile .
       - echo Running tests from test container
+
   post_build:
     commands:
       - echo codebuild succeeding is $CODEBUILD_BUILD_SUCCEEDING
