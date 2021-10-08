@@ -20,9 +20,6 @@ phases:
       - REPO_NAME=TypeGenieJSClient
       - REPO_URL=github.com/abhitopia/$REPO_NAME.git
       - aws --version
-      - git config --global user.email "codebuild@aws.com"
-      - git config --global user.name "typegeniedeveloper"
-      - GITHUB_USER=typegeniedeveloper
       - ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
