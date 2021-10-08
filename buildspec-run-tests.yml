@@ -5,7 +5,7 @@ env:
   shell: bash
   git-credential-helper: yes
   secrets-manager:
-    OAUTH_TOKEN: " git_oauth_token:oauth_token"
+    OAUTH_TOKEN: "typegenie-developer-oauth-token:oauth_token"
 
 
 phases:
@@ -20,9 +20,9 @@ phases:
       - REPO_NAME=TypeGenieJSClient
       - REPO_URL=github.com/abhitopia/$REPO_NAME.git
       - aws --version
-      - git config --global user.email "renato@typegenie.net"
-      - git config --global user.name "renatomrochatg"
-      - GITHUB_USER=renatomrochatg
+      - git config --global user.email "codebuild@aws.com"
+      - git config --global user.name "typegeniedeveloper"
+      - GITHUB_USER=typegeniedeveloper
       - ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
