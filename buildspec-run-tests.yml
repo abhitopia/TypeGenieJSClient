@@ -30,7 +30,7 @@ phases:
       - DATE=$(date '+%Y-%m-%d-%H-%M')
       - echo Build started on `date`
       - echo Building the Docker image...
-#      - docker build -t tester-container:latest -f Tests.Dockerfile .
+      - docker build -t tester-container:latest -f Tests.Dockerfile .
       - echo Running tests from test container
 
   post_build:
@@ -39,20 +39,7 @@ phases:
       - echo Build completed on `date`
       - |
         if [ "$CODEBUILD_BUILD_SUCCEEDING" == 1 ]; then
-          git remote set-url origin https://$GITHUB_USER:$OAUTH_TOKEN@$REPO_URL
-          git fetch
-          git checkout cicd_integration
-          echo Will increment version
-          npm version patch
-          git push origin cicd_integration
-          echo Build, version patch update and tar complete... Will now create release tag
-          UPDATED_VERSION=v$(awk -F \" '/"version": ".+"/ { print $4; exit; }' package.json)
-          git push origin refs/tags/$UPDATED_VERSION
-          echo tags pushed... Will now create release
-          touch token.txt
-          echo $OAUTH_TOKEN >> token.txt
-          gh auth login --with-token < token.txt
-          gh release create $UPDATED_VERSION --title "CICD test release $UPDATED_VERSION" --notes "Release automatically created through cicd pipeline"
+          echo Tests successfully passed
         else
           echo Unit tests did not pass... not suitable for staging release
         fi
